@@ -1,0 +1,71 @@
+Maskbound
+
+Genre: 3-Player Co-op Action Combat / Wave-Based Arena
+Platform: PC
+
+Target Experience
+Fast-paced co-op combat focused on maximizing team performance through player roles (affinity) and mask-based elemental counters. Mastery requires communication and active mask swapping.
+
+Core Pillars
+Dual Counter System: Player affinity counters enemy type; masks counter enemy element.
+Readable Combat: Enemy silhouette indicates type; VFX/color indicates element.
+Co-op Dependency: Coordination is essential for success.
+Wave Escalation: Increasing pressure and enemy complexity per wave.
+
+Player & Affinity
+Three co-op players, each with a natural affinity providing passive bonuses (damage, stagger) against one of three enemy families: Trolls, Scorpion Men, Gargoyles. Affinity is always active.
+
+Masks System (3 Total)
+Masks must be rotated to prevent Corruption. After 30 seconds of continuous use, a mask deals damage-over-time to the wearer, forcing a swap. Swapping resets the timer.
+
+Mask List
+Fire Mask
+Countered Element: Ice
+Utility: Burn, cleanse slow
+
+Lightning Mask
+Countered Element: Metal
+Utility: Shock, armor break
+
+Earth Mask
+Countered Element: Rock
+Utility: Shatter, stagger
+
+Enemies
+Enemies combine one of three Families (Types) with one of three Elements (Variants).
+
+Types
+Trolls – Brute
+Scorpion Men – Skirmisher
+Gargoyles – Control
+
+Elements
+Ice – Slow, weak to Fire
+Metal – Defense, weak to Lightning
+Rock – Poise, weak to Earth
+
+Combat System
+Efficiency is determined by the Dual Counter System:
+Correct Player Affinity + Correct Mask = Optimal Efficiency.
+Non-optimal combat is viable but slower and riskier.
+
+Mask Swapping – Request Swap System
+To maintain combat flow and consent, swapping is done via a request/accept UI system.
+
+Player A requests a mask from Player B.
+Player B accepts or declines instantly.
+Successful swap is instant but initiates a 3–5 second cooldown for both.
+Swaps require explicit acceptance and are blocked during stun, grab, or downed states.
+
+Gameplay Loop
+Identify enemy types and elements.
+Communicate and coordinate roles and mask strategy.
+Swap masks as necessary due to enemy threats or Corruption.
+Engage and survive the wave.
+Recover, prepare, repeat.
+
+Failure: All players downed.
+Success: Clear all waves or reach score threshold.
+
+Design Summary
+Maskbound is a wave-based co-op combat game defined by role identity and elemental mask strategy. Mastery requires synergizing player affinity and mask element against mixed enemy threats.

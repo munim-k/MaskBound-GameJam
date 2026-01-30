@@ -1779,7 +1779,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f3823ccf187da124f8fa6cd1f8cbe065, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FaceEngine
-  testMode: 1
+  testMode: 0
   targetFaceHeight: 1.5
   facePrefab: {fileID: 919132149155446097, guid: 7f5da4b7630d3384cb2ef9ce375c5ae8, type: 3}
   faceTexture: {fileID: 2800000, guid: 28dd8c8f8766f214eb4265a8d85da4e2, type: 3}

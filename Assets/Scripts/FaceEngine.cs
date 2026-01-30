@@ -3,6 +3,7 @@ using UnityEngine.UI;
 using UnityEngine.Networking;
 using System.Collections;
 using System.IO;
+using Dummiesman;
 using SFB;
 
 public class FaceEngine : MonoBehaviour
@@ -224,9 +225,11 @@ public class FaceEngine : MonoBehaviour
         byte[] jpg = selectedFaceTexture.EncodeToJPG();
 
         WWWForm form = new WWWForm();
-        form.AddBinaryData("image", jpg, "face.jpg", "image/jpeg");
+        form.AddBinaryData("file", jpg, "test_image.jpg", "image/jpeg"); // 🔑 MATCH PYTHON
 
-        UnityWebRequest req = UnityWebRequest.Post(uploadUrl, form);
+        UnityWebRequest req =
+            UnityWebRequest.Post(uploadUrl, form);
+
         yield return req.SendWebRequest();
 
         if (req.result != UnityWebRequest.Result.Success)
@@ -235,14 +238,71 @@ public class FaceEngine : MonoBehaviour
             yield break;
         }
 
-        ServerResponse response =
-            JsonUtility.FromJson<ServerResponse>(req.downloadHandler.text);
+        byte[] zipData = req.downloadHandler.data;
 
-        StartCoroutine(DownloadAndDisplayModel(
-            response.objUrl,
-            response.textureUrl
-        ));
+        HandleZipResponse(zipData);
     }
+    private void HandleZipResponse(byte[] zipData)
+    {
+        string extractPath =
+            Path.Combine(Application.persistentDataPath, "FaceResult");
+
+        if (Directory.Exists(extractPath))
+            Directory.Delete(extractPath, true);
+
+        Directory.CreateDirectory(extractPath);
+
+        string zipPath = Path.Combine(extractPath, "result.zip");
+        File.WriteAllBytes(zipPath, zipData);
+
+        System.IO.Compression.ZipFile.ExtractToDirectory(
+            zipPath,
+            extractPath
+        );
+
+        // 🔍 Find OBJ + texture dynamically
+        string objPath = null;
+        string texPath = null;
+
+        foreach (string file in Directory.GetFiles(extractPath, "*", SearchOption.AllDirectories))
+        {
+            string fileName = Path.GetFileName(file);
+            string ext = Path.GetExtension(file).ToLower();
+
+            if (ext == ".obj" && objPath == null)
+                objPath = file;
+
+            if (fileName == "out.texture.png")
+            {
+                texPath = file;
+            }
+            // if ((ext == ".png" || ext == ".jpg" || ext == ".jpeg") && texPath == null)
+        }
+
+        if (objPath == null)
+        {
+            Debug.LogError("No OBJ file found in ZIP");
+            return;
+        }
+
+        if (texPath == null)
+        {
+            Debug.LogError("No texture file found in ZIP");
+            return;
+        }
+
+        Debug.Log("OBJ FOUND: " + objPath);
+        Debug.Log("TEXTURE FOUND: " + texPath);
+
+        byte[] objBytes = File.ReadAllBytes(objPath);
+
+        Texture2D tex = new Texture2D(2, 2, TextureFormat.RGBA32, false);
+        tex.LoadImage(File.ReadAllBytes(texPath));
+
+        GameObject runtimeFace = LoadObjFromBytes(objBytes);
+        SpawnFace(runtimeFace, tex);
+    }
+
 
     private IEnumerator DownloadAndDisplayModel(string objUrl, string texUrl)
     {
@@ -265,6 +325,12 @@ public class FaceEngine : MonoBehaviour
        ======================= */
     private void SpawnFace(GameObject face, Texture texture)
     {
+        if (face == null)
+        {
+            Debug.LogError("SpawnFace called with null face");
+            return;
+        }
+
         if (currentFace != null)
             Destroy(currentFace);
 
@@ -285,17 +351,25 @@ public class FaceEngine : MonoBehaviour
         );
         face.transform.Rotate(0f, 180f, 0f);
 
-        // 🔑 AUTO-SCALE BASED ON BOUNDS
-        Renderer r = face.GetComponentInChildren<Renderer>();
-        Bounds b = r.bounds;
+        // 🔑 CALCULATE BOUNDS FROM ALL RENDERERS
+        Renderer[] renderers = face.GetComponentsInChildren<Renderer>();
+        if (renderers.Length == 0)
+        {
+            Debug.LogError("No Renderers found on loaded face");
+            return;
+        }
 
-        float scaleFactor = targetFaceHeight / b.size.y;
+        Bounds combinedBounds = renderers[0].bounds;
+        for (int i = 1; i < renderers.Length; i++)
+            combinedBounds.Encapsulate(renderers[i].bounds);
+
+        float scaleFactor = targetFaceHeight / combinedBounds.size.y;
         face.transform.localScale = Vector3.one * scaleFactor;
 
-        // Apply texture
-        r.material.mainTexture = texture;
-
         currentFace = face;
+
+        // 🔑 Apply texture AFTER loader finishes (URP-safe)
+        StartCoroutine(ApplyTextureNextFrame(face, texture));
     }
 
     /* =======================
@@ -303,9 +377,41 @@ public class FaceEngine : MonoBehaviour
        ======================= */
     private GameObject LoadObjFromBytes(byte[] objData)
     {
-        Debug.LogError("Hook your OBJ loader here");
-        return new GameObject("Face");
+        using (var stream = new MemoryStream(objData))
+        {
+            OBJLoader loader = new OBJLoader();
+            GameObject obj = loader.Load(stream);
+
+            obj.name = "RuntimeFace";
+            obj.transform.localPosition = Vector3.zero;
+            obj.transform.localRotation = Quaternion.identity;
+            obj.transform.localScale = Vector3.one;
+
+            return obj;
+        }
     }
+
+    private IEnumerator ApplyTextureNextFrame(GameObject face, Texture texture)
+    {
+        yield return null;
+
+        Renderer[] renderers = face.GetComponentsInChildren<Renderer>();
+        Shader shader = Shader.Find("Universal Render Pipeline/Unlit");
+
+        if (shader == null)
+        {
+            Debug.LogError("URP Unlit shader not found");
+            yield break;
+        }
+
+        foreach (Renderer r in renderers)
+        {
+            Material m = new Material(shader);
+            m.mainTexture = texture;
+            r.material = m;
+        }
+    }
+
 
     [System.Serializable]
     private class ServerResponse
