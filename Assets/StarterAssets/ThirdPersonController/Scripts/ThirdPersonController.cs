@@ -1,4 +1,4 @@
-﻿ using UnityEngine;
+﻿using UnityEngine;
 #if ENABLE_INPUT_SYSTEM 
 using UnityEngine.InputSystem;
 #endif
@@ -125,7 +125,7 @@ namespace StarterAssets
 #if ENABLE_INPUT_SYSTEM
                 return _playerInput.currentControlScheme == "KeyboardMouse";
 #else
-				return false;
+                return false;
 #endif
             }
         }
@@ -143,14 +143,14 @@ namespace StarterAssets
         private void Start()
         {
             _cinemachineTargetYaw = CinemachineCameraTarget.transform.rotation.eulerAngles.y;
-            
+
             _hasAnimator = TryGetComponent(out _animator);
             _controller = GetComponent<CharacterController>();
             _input = GetComponent<StarterAssetsInputs>();
-#if ENABLE_INPUT_SYSTEM 
+#if ENABLE_INPUT_SYSTEM
             _playerInput = GetComponent<PlayerInput>();
 #else
-			Debug.LogError( "Starter Assets package is missing dependencies. Please use Tools/Starter Assets/Reinstall Dependencies to fix it");
+            Debug.LogError("Starter Assets package is missing dependencies. Please use Tools/Starter Assets/Reinstall Dependencies to fix it");
 #endif
 
             AssignAnimationIDs();
@@ -161,34 +161,35 @@ namespace StarterAssets
         }
 
         private void HandleSliding()
-{
-    if (_input.slide && !_isSliding && _controller.isGrounded)
-    {
-        StartSlide();
-    }
+        {
+            if (_input.slide && !_isSliding && _controller.isGrounded)
+            {
+                Debug.Log("Something");
+                StartSlide();
+            }
 
-    if (_isSliding)
-    {
-        _slideTimer -= Time.deltaTime;
-        // Apply movement using SlideSpeed
-        if (_slideTimer <= 0) StopSlide();
-    }
-}
+            if (_isSliding)
+            {
+                _slideTimer -= Time.deltaTime;
+                // Apply movement using SlideSpeed
+                if (_slideTimer <= 0) StopSlide();
+            }
+        }
 
-private void StartSlide()
-{
-    _isSliding = true;
-    _slideTimer = SlideDuration;
-    _controller.height = _originalHeight / 2f; // Shrink collider
-    _controller.center = new Vector3(0, _controller.height / 2f, 0);
-}
+        private void StartSlide()
+        {
+            _isSliding = true;
+            _slideTimer = SlideDuration;
+            _controller.height = _originalHeight / 2f; // Shrink collider
+            _controller.center = new Vector3(0, _controller.height / 2f, 0);
+        }
 
-private void StopSlide()
-{
-    _isSliding = false;
-    _controller.height = _originalHeight; // Restore collider
-    _controller.center = new Vector3(0, _originalHeight / 2f, 0);
-}
+        private void StopSlide()
+        {
+            _isSliding = false;
+            _controller.height = _originalHeight; // Restore collider
+            _controller.center = new Vector3(0, _originalHeight / 2f, 0);
+        }
 
         private void Update()
         {
@@ -427,6 +428,6 @@ private void StopSlide()
             }
         }
 
-        
+
     }
 }
