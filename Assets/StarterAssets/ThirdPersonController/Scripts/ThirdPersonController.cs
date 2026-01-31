@@ -24,7 +24,6 @@ public class FluidThirdPersonController_OldInput : NetworkBehaviour
     [SerializeField] private Animator animator;
 
     [Header("Move")]
-    public float walkSpeed = 4.0f;
     public float sprintSpeed = 6.5f;
     public float acceleration = 18f;
     public float deceleration = 22f;
@@ -95,6 +94,14 @@ public class FluidThirdPersonController_OldInput : NetworkBehaviour
     private float _originalHeight;
     private Vector3 _originalCenter;
 
+
+    // Animations
+    private static readonly int _animSpeed = Animator.StringToHash("Speed");
+    private static readonly int _animGrounded = Animator.StringToHash("Grounded");
+    private static readonly int _animVerticalVelocity = Animator.StringToHash("VerticalVelocity");
+    private static readonly int _animJump = Animator.StringToHash("Jump");
+    private static readonly int _animSliding = Animator.StringToHash("IsSliding");
+
     private void Awake()
     {
         _cc = GetComponent<CharacterController>();
@@ -127,6 +134,23 @@ public class FluidThirdPersonController_OldInput : NetworkBehaviour
         HandleSlide();
         HandleJumpAndGravity();
         HandleMovement();
+
+        UpdateAnimator();
+    }
+
+    private void UpdateAnimator()
+    {
+        if (animator == null) return;
+
+        // Use _speed for the blend tree (0 = Idle, 4 = Walk, 6.5 = Sprint)
+        animator.SetFloat(_animSpeed, _speed);
+        
+        // Vertical velocity helps transitions for falling vs jumping
+        animator.SetFloat(_animVerticalVelocity, _verticalVelocity);
+        
+        // Boolean states
+        animator.SetBool(_animGrounded, _grounded);
+        animator.SetBool(_animSliding, _isSliding);
     }
 
     private void LateUpdate()
@@ -191,7 +215,7 @@ public class FluidThirdPersonController_OldInput : NetworkBehaviour
             return;
         }
 
-        float targetMaxSpeed = _sprintHeld ? sprintSpeed : walkSpeed;
+        float targetMaxSpeed = sprintSpeed;
         float inputMag = Mathf.Clamp01(_moveInput.magnitude);
         float desiredSpeed = targetMaxSpeed * inputMag;
 
@@ -255,7 +279,9 @@ public class FluidThirdPersonController_OldInput : NetworkBehaviour
 
         if (_isSliding) StopSlide();
 
+        if (animator != null) animator.SetTrigger(_animJump);
         _verticalVelocity = Mathf.Sqrt(jumpHeight * -2f * gravity);
+
     }
 
     // --------------------
