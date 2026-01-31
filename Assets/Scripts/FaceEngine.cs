@@ -23,9 +23,8 @@ public class FaceEngine : NetworkBehaviour
     [SerializeField] private float faceDistanceFromCamera = 1.2f;
     
     [Header("GAME SCENE ATTACHMENT")]
-    [SerializeField] private Vector3 faceLocalPosition = new Vector3(0, 0.1f, 0.05f);
-    [SerializeField] private Vector3 faceLocalScale = new Vector3(0.3f, 0.3f, 0.3f);
-    [SerializeField] private Vector3 fallbackHeadOffset = new Vector3(0, 1.7f, 0.2f);
+    [SerializeField] private Vector3 faceLocalPosition = new Vector3(0, 2f, 0.75f);
+    [SerializeField] private float faceLocalScale = 0.001f;
 
     [Header("TEST MODE")]
     [SerializeField] private GameObject facePrefab;
@@ -87,26 +86,52 @@ public class FaceEngine : NetworkBehaviour
 
     public override void OnNetworkSpawn()
     {
-        SceneManager.sceneLoaded += OnSceneLoaded;
+        // Subscribe to network scene events (same timing as LocalSpawner)
+        if (NetworkManager.Singleton != null)
+        {
+            NetworkManager.Singleton.SceneManager.OnSceneEvent += OnSceneEvent;
+        }
     }
 
     private void OnDestroy()
     {
-        SceneManager.sceneLoaded -= OnSceneLoaded;
+        if (NetworkManager.Singleton != null && NetworkManager.Singleton.SceneManager != null)
+        {
+            NetworkManager.Singleton.SceneManager.OnSceneEvent -= OnSceneEvent;
+        }
     }
 
-    private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+    private void OnSceneEvent(SceneEvent sceneEvent)
     {
-        if (scene.name != "Game")
-            return;
+        // Wait for LoadEventCompleted (same as LocalSpawner)
+        // This ensures players are spawned BEFORE we try to attach faces
+        if (sceneEvent.SceneEventType == SceneEventType.LoadEventCompleted)
+        {
+            // Check if we're in the Game scene
+            if (UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == "Game")
+            {
+                Debug.Log("[FaceEngine] LoadEventCompleted in Game scene, attaching faces to players");
+                StartCoroutine(AttachFacesToPlayers());
+            }
+        }
+    }
 
-        Debug.Log("[FaceEngine] Game scene loaded, attaching faces to players");
+    private IEnumerator AttachFacesToPlayers()
+    {
+        // Small delay to ensure players are fully ready
+        yield return new WaitForSeconds(0.2f);
+
+        Debug.Log($"[FaceEngine] Attaching {spawnedFaces.Count} faces to players");
 
         foreach (var kvp in spawnedFaces)
         {
             ulong clientId = kvp.Key;
             GameObject face = kvp.Value;
-            if (face == null) continue;
+            if (face == null)
+            {
+                Debug.LogWarning($"[FaceEngine] Face is null for client {clientId}");
+                continue;
+            }
 
             // Get the player GameObject for this client
             if (!NetworkManager.Singleton.ConnectedClients.ContainsKey(clientId))
@@ -118,9 +143,7 @@ public class FaceEngine : NetworkBehaviour
             NetworkObject playerNetObj = NetworkManager.Singleton.ConnectedClients[clientId].PlayerObject;
             if (playerNetObj == null)
             {
-                Debug.LogWarning($"[FaceEngine] No PlayerObject for client {clientId}, will retry");
-                // Player might not be spawned yet, retry after delay
-                StartCoroutine(RetryAttachFace(clientId, face));
+                Debug.LogError($"[FaceEngine] No PlayerObject for client {clientId} even after LoadEventCompleted!");
                 continue;
             }
 
@@ -128,87 +151,26 @@ public class FaceEngine : NetworkBehaviour
         }
     }
 
+
+
     private void AttachFaceToPlayer(GameObject face, GameObject player, ulong clientId)
     {
         Debug.Log($"[FaceEngine] Attaching face for client {clientId} to player {player.name}");
 
-        // Find the head bone (try common names)
-        Transform headBone = FindHeadBone(player.transform);
-
-        if (headBone != null)
-        {
-            Debug.Log($"[FaceEngine] Found head bone: {headBone.name}");
-            face.transform.SetParent(headBone);
-            face.transform.localPosition = faceLocalPosition;
-            face.transform.localRotation = Quaternion.identity;
-            face.transform.localScale = faceLocalScale;
-        }
-        else
-        {
-            // Fallback: attach to player root with head-level offset
-            Debug.LogWarning($"[FaceEngine] No head bone found for player {player.name}, attaching to player root");
-            face.transform.SetParent(player.transform);
-            face.transform.localPosition = fallbackHeadOffset;
-            face.transform.localRotation = Quaternion.identity;
-            face.transform.localScale = faceLocalScale;
-        }
+        // Parent face to player
+        face.transform.SetParent(player.transform);
         
-        Debug.Log($"[FaceEngine] ✅ Face attached! LocalPos={face.transform.localPosition}, LocalScale={face.transform.localScale}");
+        // Set position and scale from Inspector values
+        face.transform.localPosition = faceLocalPosition;
+        face.transform.localRotation = Quaternion.identity;
+        face.transform.localScale = Vector3.one * faceLocalScale;
+        
+        Debug.Log($"[FaceEngine] ✅ Face attached! LocalPos={face.transform.localPosition}");
     }
 
-    private Transform FindHeadBone(Transform root)
-    {
-        // Try common head bone naming conventions
-        string[] headNames = { "Head", "head", "Bip001 Head", "mixamorig:Head", "Armature/Head" };
 
-        foreach (string name in headNames)
-        {
-            // Try direct child first
-            Transform found = root.Find(name);
-            if (found != null) return found;
 
-            // Try recursive search
-            found = FindChildRecursive(root, name);
-            if (found != null) return found;
-        }
 
-        return null;
-    }
-
-    private Transform FindChildRecursive(Transform parent, string name)
-    {
-        foreach (Transform child in parent)
-        {
-            if (child.name.Equals(name, System.StringComparison.OrdinalIgnoreCase))
-                return child;
-
-            Transform result = FindChildRecursive(child, name);
-            if (result != null) return result;
-        }
-        return null;
-    }
-
-    private IEnumerator RetryAttachFace(ulong clientId, GameObject face)
-    {
-        // Wait for player to spawn (spawning happens after scene load completes)
-        yield return new WaitForSeconds(1.0f);
-
-        if (!NetworkManager.Singleton.ConnectedClients.ContainsKey(clientId))
-        {
-            Debug.LogError($"[FaceEngine] Client {clientId} disconnected before face attach retry");
-            yield break;
-        }
-
-        NetworkObject playerNetObj = NetworkManager.Singleton.ConnectedClients[clientId].PlayerObject;
-        if (playerNetObj != null)
-        {
-            AttachFaceToPlayer(face, playerNetObj.gameObject, clientId);
-        }
-        else
-        {
-            Debug.LogError($"[FaceEngine] Failed to attach face for client {clientId} - PlayerObject still null after retry");
-        }
-    }
 
 
     /* =========================
