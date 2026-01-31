@@ -7,13 +7,20 @@ public class UIManager : NetworkBehaviour
     [Header("Panels")]
     [SerializeField] private GameObject gameStartPanel;
     [SerializeField] private GameObject uploadPicturePanel;
+    [SerializeField] private GameObject enterGamePanel;   // ✅ NEW (added, not replacing)
 
     [Header("Force Start (Host Only)")]
     [SerializeField] private GameObject forceStartButton;
     [SerializeField] private int minPlayers = 2;
     [SerializeField] private int maxPlayers = 3;
 
+    [Header("Enter Game")]
+    [SerializeField] private GameObject startGameButton;
+
+    // ❌ OLD meaning: upload confirmed
+    // ✅ NEW meaning: face READY (downloaded + spawned)
     private HashSet<ulong> confirmedClients = new HashSet<ulong>();
+
     private bool uploadPhaseStarted;
 
     // =========================
@@ -24,10 +31,19 @@ public class UIManager : NetworkBehaviour
     {
         ShowGameStartPanelLocal();
 
+
+        if (startGameButton != null)
+            startGameButton.SetActive(false);
+            
+        if (enterGamePanel != null)
+            enterGamePanel.SetActive(false);
+
         if (forceStartButton != null)
         {
             forceStartButton.SetActive(false);
-            forceStartButton.GetComponent<UnityEngine.UI.Button>().onClick.AddListener(OnForceStartPressed);
+            forceStartButton
+                .GetComponent<UnityEngine.UI.Button>()
+                .onClick.AddListener(OnForceStartPressed);
         }
     }
 
@@ -43,7 +59,7 @@ public class UIManager : NetworkBehaviour
     }
 
     // =========================
-    // FORCE START LOGIC
+    // FORCE START LOGIC (UNCHANGED)
     // =========================
 
     private void UpdateForceStartVisibility()
@@ -66,9 +82,6 @@ public class UIManager : NetworkBehaviour
         forceStartButton.SetActive(shouldShow);
     }
 
-    /// <summary>
-    /// Called by Host pressing Force Start button
-    /// </summary>
     public void OnForceStartPressed()
     {
         Debug.Log("FORCE START BUTTON CLICKED");
@@ -85,7 +98,7 @@ public class UIManager : NetworkBehaviour
     }
 
     // =========================
-    // UPLOAD PHASE
+    // UPLOAD PHASE (UNCHANGED)
     // =========================
 
     [ServerRpc(RequireOwnership = false)]
@@ -106,41 +119,68 @@ public class UIManager : NetworkBehaviour
     }
 
     // =========================
-    // CONFIRM TRACKING
+    // FACE READY TRACKING (CHANGED)
     // =========================
+    // 🔑 CALLED FROM FaceEngine AFTER FACE IS SPAWNED
 
-    [ServerRpc(RequireOwnership = false)]
-    public void ConfirmUploadServerRpc(ServerRpcParams rpcParams = default)
+    public void NotifyFaceReady(ulong clientId)
     {
-        ulong clientId = rpcParams.Receive.SenderClientId;
+        if (!IsServer)
+            return;
 
         if (confirmedClients.Contains(clientId))
             return;
 
         confirmedClients.Add(clientId);
 
+        Debug.Log($"Face ready from client {clientId}");
+
         if (confirmedClients.Count == NetworkManager.Singleton.ConnectedClients.Count)
         {
-            NetworkManager.Singleton.SceneManager.LoadScene(
-                "Game",
-                UnityEngine.SceneManagement.LoadSceneMode.Single
-            );
+            ShowEnterGamePanelClientRpc();
         }
     }
 
+    [ClientRpc]
+    private void ShowEnterGamePanelClientRpc()
+    {
+        uploadPicturePanel?.SetActive(false);
+        enterGamePanel?.SetActive(true);
+
+        if (startGameButton != null)
+            startGameButton.SetActive(IsServer);
+    }
+
     // =========================
-    // LOCAL UI HELPERS
+    // HOST START GAME (NEW)
+    // =========================
+
+    public void OnStartGamePressed()
+    {
+        if (!IsServer)
+            return;
+
+        NetworkManager.Singleton.SceneManager.LoadScene(
+            "Game",
+            UnityEngine.SceneManagement.LoadSceneMode.Single
+        );
+    }
+
+    // =========================
+    // LOCAL UI HELPERS (UNCHANGED)
     // =========================
 
     private void ShowGameStartPanelLocal()
     {
         gameStartPanel?.SetActive(true);
         uploadPicturePanel?.SetActive(false);
+        enterGamePanel?.SetActive(false);
     }
 
     private void ShowUploadPanelLocal()
     {
         gameStartPanel?.SetActive(false);
         uploadPicturePanel?.SetActive(true);
+        enterGamePanel?.SetActive(false);
     }
 }
