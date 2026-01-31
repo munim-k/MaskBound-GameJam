@@ -28,7 +28,7 @@
                     "name": "Jump",
                     "type": "Button",
                     "id": "8c4abdf8-4099-493a-aa1a-129acec7c3df",
-                    "expectedControlType": "Button",
+                    "expectedControlType": "",
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": false
@@ -46,6 +46,15 @@
                     "name": "Slide",
                     "type": "Button",
                     "id": "3d649cc3-98dd-4ab8-ab55-5eae9627c8bb",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "peen",
+                    "type": "Button",
+                    "id": "a701171a-dbef-47db-81fd-6fbce451ee24",
                     "expectedControlType": "",
                     "processors": "",
                     "interactions": "",
@@ -232,11 +241,22 @@
                 {
                     "name": "",
                     "id": "09cc1b86-415b-4f9b-9f71-cdcd7db761e0",
-                    "path": "<Keyboard>/c",
+                    "path": "<Keyboard>/#(V)",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": ";KeyboardMouse",
+                    "action": "Slide",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "4f13c20c-96ae-4590-94c7-2a0287d8b3e8",
+                    "path": "",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
-                    "action": "Slide",
+                    "action": "peen",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }
