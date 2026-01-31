@@ -45,13 +45,24 @@ public class MaskRequestUI : MonoBehaviour
         
         if (PlayerMaskManager.Local == null)
         {
-            Debug.LogError("[MaskRequestUI] PlayerMaskManager.Local is null!");
+            Debug.LogError("[MaskRequestUI] CRITICAL: PlayerMaskManager.Local is null!");
             root.SetActive(false);
             return;
         }
         
+        Debug.Log($"[MaskRequestUI] PlayerMaskManager.Local found, calling AcceptRequest()");
         root.SetActive(false);
-        PlayerMaskManager.Local.AcceptRequest();
+        
+        try
+        {
+            PlayerMaskManager.Local.AcceptRequest();
+            Debug.Log("[MaskRequestUI] AcceptRequest() call completed");
+        }
+        catch (System.Exception e)
+        {
+            Debug.LogError($"[MaskRequestUI] EXCEPTION calling AcceptRequest: {e.Message}\n{e.StackTrace}");
+        }
+        
         Cursor.visible = false;
         Cursor.lockState = CursorLockMode.Locked;
         

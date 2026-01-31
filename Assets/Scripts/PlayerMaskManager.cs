@@ -115,25 +115,36 @@ public class PlayerMaskManager : NetworkBehaviour
     /// </summary>
     public void AcceptRequest()
     {
-        if (!IsOwner)
-        {
-            Debug.LogWarning("[PlayerMaskManager] AcceptRequest called on non-owner!");
-            return;
-        }
-
-        if (pendingRequester == 0)
-        {
-            Debug.LogWarning("[PlayerMaskManager] No pending request to accept!");
-            return;
-        }
-
-        Debug.Log($"[PlayerMaskManager] CLIENT {OwnerClientId}: Accepting swap request from client {pendingRequester}");
-        Debug.Log($"[PlayerMaskManager] CLIENT {OwnerClientId}: Calling AcceptRequestServerRpc({pendingRequester})");
-        AcceptRequestServerRpc(pendingRequester);
+        Debug.Log($"[PlayerMaskManager] ========== AcceptRequest() CALLED ========== IsOwner={IsOwner}, ClientId={OwnerClientId}");
         
-        // Clear pending request
-        pendingRequester = 0;
-        Debug.Log($"[PlayerMaskManager] CLIENT {OwnerClientId}: Cleared pending requester");
+        try
+        {
+            if (!IsOwner)
+            {
+                Debug.LogWarning("[PlayerMaskManager] AcceptRequest called on non-owner!");
+                return;
+            }
+
+            Debug.Log($"[PlayerMaskManager] IsOwner check passed. pendingRequester={pendingRequester}");
+
+            if (pendingRequester == 0)
+            {
+                Debug.LogWarning("[PlayerMaskManager] No pending request to accept!");
+                return;
+            }
+
+            Debug.Log($"[PlayerMaskManager] CLIENT {OwnerClientId}: Accepting swap request from client {pendingRequester}");
+            Debug.Log($"[PlayerMaskManager] CLIENT {OwnerClientId}: Calling AcceptRequestServerRpc({pendingRequester})");
+            AcceptRequestServerRpc(pendingRequester);
+            
+            // Clear pending request
+            pendingRequester = 0;
+            Debug.Log($"[PlayerMaskManager] CLIENT {OwnerClientId}: Cleared pending requester");
+        }
+        catch (System.Exception e)
+        {
+            Debug.LogError($"[PlayerMaskManager] EXCEPTION in AcceptRequest: {e.Message}\n{e.StackTrace}");
+        }
     }
 
     [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Owner)]
