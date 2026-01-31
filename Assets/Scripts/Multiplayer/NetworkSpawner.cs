@@ -11,22 +11,20 @@ public class NetworkSpawner : NetworkBehaviour
     [SerializeField] private float matchmakingTimeout = 50f;
 
     [Header("Scenes")]
-    [SerializeField] private string gameSceneName = "Random";
     [SerializeField] private string timeoutSceneName = "MainMenu";
 
     [Header("UI")]
     [SerializeField] private GameObject textBox;
     [SerializeField] private GameObject timerText;
     [SerializeField] private GameObject playersJoinedText;
-    [SerializeField] private GameObject forceStartButton; // HOST ONLY
 
     private TextMeshProUGUI timerTMP;
     private TextMeshProUGUI playersTMP;
 
     private float elapsedTime;
     private bool timerActive;
-    private bool gameStarted;
-    private bool initialized;
+    private bool uploadPhaseStarted;
+    private bool initRan;
 
     private void Awake()
     {
@@ -35,18 +33,11 @@ public class NetworkSpawner : NetworkBehaviour
 
         if (playersJoinedText != null)
             playersTMP = playersJoinedText.GetComponent<TextMeshProUGUI>();
-
-        if (forceStartButton != null)
-            forceStartButton.SetActive(false);
     }
 
     public override void OnNetworkSpawn()
     {
-        if (!IsServer || initialized) return;
-        initialized = true;
-
-        NetworkManager.Singleton.OnClientConnectedCallback += OnClientConnected;
-        NetworkManager.Singleton.OnClientDisconnectCallback += OnClientDisconnected;
+        Init();
     }
 
     private void OnDestroy()
@@ -57,9 +48,17 @@ public class NetworkSpawner : NetworkBehaviour
         NetworkManager.Singleton.OnClientDisconnectCallback -= OnClientDisconnected;
     }
 
-    // =========================
-    // UI BUTTONS
-    // =========================
+    private void Init()
+    {
+        if (initRan) return;
+        initRan = true;
+
+        if (IsServer)
+        {
+            NetworkManager.Singleton.OnClientConnectedCallback += OnClientConnected;
+            NetworkManager.Singleton.OnClientDisconnectCallback += OnClientDisconnected;
+        }
+    }
 
     public void OnJoinPressed()
     {
@@ -70,37 +69,9 @@ public class NetworkSpawner : NetworkBehaviour
         if (timerText != null) timerText.SetActive(true);
     }
 
-    public void OnForceStartPressed()
-    {
-        if (!IsServer) return;
-
-        if (GetConnectedPlayers() >= minPlayers)
-        {
-            Debug.Log("Host forced game start.");
-            StartGame();
-        }
-    }
-
-    public void OnClosePressed()
-    {
-        timerActive = false;
-
-        if (NetworkManager.Singleton != null &&
-            (NetworkManager.Singleton.IsHost || NetworkManager.Singleton.IsServer))
-        {
-            NetworkManager.Singleton.Shutdown();
-        }
-
-        SceneManager.LoadScene(timeoutSceneName);
-    }
-
-    // =========================
-    // UPDATE LOOP
-    // =========================
-
     private void Update()
     {
-        if (!timerActive || gameStarted) return;
+        if (!timerActive || uploadPhaseStarted) return;
 
         elapsedTime += Time.deltaTime;
         UpdateUI();
@@ -123,63 +94,35 @@ public class NetworkSpawner : NetworkBehaviour
             int remaining = Mathf.CeilToInt(matchmakingTimeout - elapsedTime);
             timerTMP.text = $"Finding Match: {remaining}s";
         }
-
-        // Host-only force start button
-        if (forceStartButton != null)
-        {
-            bool canForceStart =
-                IsServer &&
-                connected >= minPlayers &&
-                connected < maxPlayers;
-
-            forceStartButton.SetActive(canForceStart);
-        }
     }
-
-    // =========================
-    // NETWORK EVENTS
-    // =========================
 
     private void OnClientConnected(ulong clientId)
     {
         Debug.Log($"Client connected: {clientId}");
 
-        // Optional auto-start when full
         if (GetConnectedPlayers() == maxPlayers)
         {
-            StartGame();
+            StartUploadPhase();
         }
     }
 
     private void OnClientDisconnected(ulong clientId)
     {
         Debug.Log($"Client disconnected: {clientId}");
-
-        if (forceStartButton != null)
-            forceStartButton.SetActive(false);
     }
 
-    // =========================
-    // MATCH FLOW
-    // =========================
-
-    private void StartGame()
+    private void StartUploadPhase()
     {
-        if (gameStarted) return;
+        if (uploadPhaseStarted) return;
+        if (!IsServer) return;
 
-        gameStarted = true;
+        uploadPhaseStarted = true;
         timerActive = false;
-
-        Debug.Log("Starting co-op game.");
 
         if (textBox != null) textBox.SetActive(false);
         if (timerText != null) timerText.SetActive(false);
-        if (forceStartButton != null) forceStartButton.SetActive(false);
 
-        NetworkManager.Singleton.SceneManager.LoadScene(
-            gameSceneName,
-            LoadSceneMode.Single
-        );
+        FindObjectOfType<UIManager>()?.StartUploadPhaseServerRpc();
     }
 
     private void HandleTimeout()
@@ -196,10 +139,6 @@ public class NetworkSpawner : NetworkBehaviour
 
         SceneManager.LoadScene(timeoutSceneName);
     }
-
-    // =========================
-    // HELPERS
-    // =========================
 
     private int GetConnectedPlayers()
     {

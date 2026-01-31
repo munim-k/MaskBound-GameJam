@@ -1,47 +1,28 @@
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.Networking;
+using Unity.Netcode;
 using System.Collections;
 using System.IO;
 using Dummiesman;
 using SFB;
 
-public class FaceEngine : MonoBehaviour
+public class FaceEngine : NetworkBehaviour
 {
-    /* =======================
-       MODE
-       ======================= */
     [Header("MODE")]
-    [Tooltip("ON = use prefab + texture | OFF = use backend URLs")]
-    [SerializeField] private bool testMode = true;
+    [SerializeField] private bool testMode = false;
 
-    [SerializeField] private float targetFaceHeight = 0.25f; // world units
+    [SerializeField] private float targetFaceHeight = 0.25f;
+    [SerializeField] private float faceDistanceFromCamera = 1.2f;
 
-    /* =======================
-       TEST MODE REFERENCES
-       ======================= */
-    [Header("TEST MODE (Editor Only)")]
+    [Header("TEST MODE")]
     [SerializeField] private GameObject facePrefab;
     [SerializeField] private Texture faceTexture;
 
-    /* =======================
-       SPAWN SETTINGS
-       ======================= */
-    [Header("Spawn Settings")]
-    [SerializeField] private float faceDistanceFromCamera = 1.2f;
-
-    /* =======================
-       UI REFERENCES
-       ======================= */
-    [Header("UI References")]
+    [Header("UI")]
     [SerializeField] private GameObject uploadPanel;
     [SerializeField] private GameObject mainPanel;
     [SerializeField] private RawImage previewImage;
-
-    /* =======================
-       BUTTONS
-       ======================= */
-    [Header("Buttons")]
     [SerializeField] private Button openPanelButton;
     [SerializeField] private Button closePanelButton;
     [SerializeField] private Button uploadFileButton;
@@ -49,20 +30,16 @@ public class FaceEngine : MonoBehaviour
     [SerializeField] private Button captureButton;
     [SerializeField] private Button confirmButton;
 
-    /* =======================
-       NETWORKING
-       ======================= */
-    [Header("Networking")]
+    [Header("Backend")]
     [SerializeField] private string uploadUrl;
 
-    /* =======================
-       CAMERA (DEVICE CAMERA)
-       ======================= */
     private WebCamTexture webCamTexture;
-    private bool cameraRunning = false;
-
     private Texture2D selectedFaceTexture;
     private GameObject currentFace;
+
+    // =========================
+    // UNITY
+    // =========================
 
     private void Awake()
     {
@@ -77,159 +54,37 @@ public class FaceEngine : MonoBehaviour
         confirmButton.onClick.AddListener(ConfirmImage);
     }
 
-    /* =======================
-       PANEL CONTROL
-       ======================= */
-    private void OpenUploadPanel()
-    {
-        uploadPanel.SetActive(true);
-        mainPanel.SetActive(false);
-        confirmButton.gameObject.SetActive(false);
-    }
+    // =========================
+    // CONFIRM
+    // =========================
 
-    private void CloseUploadPanel()
-    {
-        StopCamera();
-        uploadPanel.SetActive(false);
-        mainPanel.SetActive(true);
-    }
-
-    /* =======================
-       FILE UPLOAD
-       ======================= */
-    private void UploadFromFile()
-    {
-        StopCamera();
-
-        var extensions = new[]
-        {
-            new ExtensionFilter("Image Files", "png", "jpg", "jpeg")
-        };
-
-        var paths = StandaloneFileBrowser.OpenFilePanel(
-            "Select Face Image",
-            "",
-            extensions,
-            false
-        );
-
-        if (paths.Length > 0)
-        {
-            byte[] imageData = File.ReadAllBytes(paths[0]);
-            LoadImage(imageData);
-        }
-    }
-
-    /* =======================
-       CAMERA PREVIEW
-       ======================= */
-    private void StartCamera()
-    {
-        if (cameraRunning) return;
-
-        webCamTexture = new WebCamTexture();
-        previewImage.texture = webCamTexture;
-        webCamTexture.Play();
-
-        cameraRunning = true;
-
-        captureButton.gameObject.SetActive(true);
-        takePictureButton.gameObject.SetActive(false);
-        uploadFileButton.gameObject.SetActive(false);
-        confirmButton.gameObject.SetActive(false);
-    }
-
-    private void CapturePhoto()
-    {
-        if (!cameraRunning || webCamTexture == null) return;
-
-        Texture2D photo = new Texture2D(
-            webCamTexture.width,
-            webCamTexture.height,
-            TextureFormat.RGB24,
-            false
-        );
-
-        photo.SetPixels(webCamTexture.GetPixels());
-        photo.Apply();
-
-        previewImage.texture = photo;
-        selectedFaceTexture = photo;
-
-        StopCamera();
-
-        captureButton.gameObject.SetActive(false);
-        takePictureButton.gameObject.SetActive(true);
-        uploadFileButton.gameObject.SetActive(true);
-        confirmButton.gameObject.SetActive(true);
-    }
-
-    private void StopCamera()
-    {
-        if (webCamTexture != null)
-        {
-            webCamTexture.Stop();
-            webCamTexture = null;
-        }
-
-        cameraRunning = false;
-    }
-
-    /* =======================
-       LOAD IMAGE
-       ======================= */
-    private void LoadImage(byte[] imageData)
-    {
-        Texture2D texture = new Texture2D(2, 2, TextureFormat.RGB24, false);
-        texture.LoadImage(imageData);
-
-        previewImage.texture = texture;
-        selectedFaceTexture = texture;
-
-        confirmButton.gameObject.SetActive(true);
-    }
-
-    /* =======================
-       CONFIRM
-       ======================= */
     private void ConfirmImage()
     {
         uploadPanel.SetActive(false);
 
         if (testMode)
         {
-            ShowTestFace();
+            // Local-only test
+            SpawnFace(Instantiate(facePrefab), faceTexture);
+            FindObjectOfType<UIManager>()?.ConfirmUploadServerRpc();
+            return;
         }
-        else
-        {
-            StartCoroutine(SendImageToServer());
-        }
+
+        StartCoroutine(SendImageToPipelineServer());
     }
 
-    /* =======================
-       TEST MODE
-       ======================= */
-    private void ShowTestFace()
-    {
-        SpawnFace(
-            Instantiate(facePrefab),
-            faceTexture
-        );
-    }
+    // =========================
+    // PIPELINE SERVER
+    // =========================
 
-    /* =======================
-       BACKEND MODE
-       ======================= */
-    private IEnumerator SendImageToServer()
+    private IEnumerator SendImageToPipelineServer()
     {
         byte[] jpg = selectedFaceTexture.EncodeToJPG();
 
         WWWForm form = new WWWForm();
-        form.AddBinaryData("file", jpg, "test_image.jpg", "image/jpeg"); // 🔑 MATCH PYTHON
+        form.AddBinaryData("file", jpg, "face.jpg", "image/jpeg");
 
-        UnityWebRequest req =
-            UnityWebRequest.Post(uploadUrl, form);
-
+        UnityWebRequest req = UnityWebRequest.Post(uploadUrl, form);
         yield return req.SendWebRequest();
 
         if (req.result != UnityWebRequest.Result.Success)
@@ -238,173 +93,105 @@ public class FaceEngine : MonoBehaviour
             yield break;
         }
 
-        byte[] zipData = req.downloadHandler.data;
+        // 🔑 Expect JSON with URLs
+        PipelineResponse response =
+            JsonUtility.FromJson<PipelineResponse>(req.downloadHandler.text);
 
-        HandleZipResponse(zipData);
+        if (string.IsNullOrEmpty(response.objUrl) ||
+            string.IsNullOrEmpty(response.textureUrl))
+        {
+            Debug.LogError("Invalid pipeline response");
+            yield break;
+        }
+
+        // 🔑 Sync URLs via Netcode
+        SendFaceUrlsServerRpc(response.objUrl, response.textureUrl);
+
+        FindObjectOfType<UIManager>()?.ConfirmUploadServerRpc();
     }
-    private void HandleZipResponse(byte[] zipData)
+
+    // =========================
+    // NETCODE SYNC (URL ONLY)
+    // =========================
+
+    [ServerRpc(RequireOwnership = false)]
+    private void SendFaceUrlsServerRpc(string objUrl, string textureUrl)
     {
-        string extractPath =
-            Path.Combine(Application.persistentDataPath, "FaceResult");
-
-        if (Directory.Exists(extractPath))
-            Directory.Delete(extractPath, true);
-
-        Directory.CreateDirectory(extractPath);
-
-        string zipPath = Path.Combine(extractPath, "result.zip");
-        File.WriteAllBytes(zipPath, zipData);
-
-        System.IO.Compression.ZipFile.ExtractToDirectory(
-            zipPath,
-            extractPath
-        );
-
-        // 🔍 Find OBJ + texture dynamically
-        string objPath = null;
-        string texPath = null;
-
-        foreach (string file in Directory.GetFiles(extractPath, "*", SearchOption.AllDirectories))
-        {
-            string fileName = Path.GetFileName(file);
-            string ext = Path.GetExtension(file).ToLower();
-
-            if (ext == ".obj" && objPath == null)
-                objPath = file;
-
-            if (fileName == "out.texture.png")
-            {
-                texPath = file;
-            }
-            // if ((ext == ".png" || ext == ".jpg" || ext == ".jpeg") && texPath == null)
-        }
-
-        if (objPath == null)
-        {
-            Debug.LogError("No OBJ file found in ZIP");
-            return;
-        }
-
-        if (texPath == null)
-        {
-            Debug.LogError("No texture file found in ZIP");
-            return;
-        }
-
-        Debug.Log("OBJ FOUND: " + objPath);
-        Debug.Log("TEXTURE FOUND: " + texPath);
-
-        byte[] objBytes = File.ReadAllBytes(objPath);
-
-        Texture2D tex = new Texture2D(2, 2, TextureFormat.RGBA32, false);
-        tex.LoadImage(File.ReadAllBytes(texPath));
-
-        GameObject runtimeFace = LoadObjFromBytes(objBytes);
-        SpawnFace(runtimeFace, tex);
+        BroadcastFaceUrlsClientRpc(objUrl, textureUrl);
     }
 
+    [ClientRpc]
+    private void BroadcastFaceUrlsClientRpc(string objUrl, string textureUrl)
+    {
+        StartCoroutine(DownloadAndSpawnFace(objUrl, textureUrl));
+    }
 
-    private IEnumerator DownloadAndDisplayModel(string objUrl, string texUrl)
+    // =========================
+    // DOWNLOAD + SPAWN
+    // =========================
+
+    private IEnumerator DownloadAndSpawnFace(string objUrl, string texUrl)
     {
         UnityWebRequest objReq = UnityWebRequest.Get(objUrl);
         yield return objReq.SendWebRequest();
 
-        UnityWebRequest texReq =
-            UnityWebRequestTexture.GetTexture(texUrl);
+        if (objReq.result != UnityWebRequest.Result.Success)
+        {
+            Debug.LogError("OBJ download failed");
+            yield break;
+        }
+
+        UnityWebRequest texReq = UnityWebRequestTexture.GetTexture(texUrl);
         yield return texReq.SendWebRequest();
+
+        if (texReq.result != UnityWebRequest.Result.Success)
+        {
+            Debug.LogError("Texture download failed");
+            yield break;
+        }
 
         byte[] objData = objReq.downloadHandler.data;
         Texture2D tex = DownloadHandlerTexture.GetContent(texReq);
 
-        GameObject runtimeFace = LoadObjFromBytes(objData);
-        SpawnFace(runtimeFace, tex);
+        GameObject face = LoadObjFromBytes(objData);
+        SpawnFace(face, tex);
     }
 
-    /* =======================
-       SHARED SPAWN LOGIC
-       ======================= */
+    // =========================
+    // SPAWN
+    // =========================
+
     private void SpawnFace(GameObject face, Texture texture)
     {
-        if (face == null)
-        {
-            Debug.LogError("SpawnFace called with null face");
-            return;
-        }
-
         if (currentFace != null)
             Destroy(currentFace);
 
         Camera cam = Camera.main;
-        if (cam == null)
-        {
-            Debug.LogError("No Main Camera found in scene");
-            return;
-        }
+        Vector3 pos = cam.transform.position + cam.transform.forward * faceDistanceFromCamera;
 
-        // Position in front of camera
-        Vector3 spawnPos =
-            cam.transform.position + cam.transform.forward * faceDistanceFromCamera;
-
-        face.transform.position = spawnPos;
-        face.transform.rotation = Quaternion.LookRotation(
-            face.transform.position - cam.transform.position
-        );
+        face.transform.position = pos;
+        face.transform.rotation = Quaternion.LookRotation(face.transform.position - cam.transform.position);
         face.transform.Rotate(0f, 180f, 0f);
 
-        // 🔑 CALCULATE BOUNDS FROM ALL RENDERERS
         Renderer[] renderers = face.GetComponentsInChildren<Renderer>();
-        if (renderers.Length == 0)
-        {
-            Debug.LogError("No Renderers found on loaded face");
-            return;
-        }
+        Bounds bounds = renderers[0].bounds;
+        foreach (Renderer r in renderers)
+            bounds.Encapsulate(r.bounds);
 
-        Bounds combinedBounds = renderers[0].bounds;
-        for (int i = 1; i < renderers.Length; i++)
-            combinedBounds.Encapsulate(renderers[i].bounds);
-
-        float scaleFactor = targetFaceHeight / combinedBounds.size.y;
-        face.transform.localScale = Vector3.one * scaleFactor;
+        float scale = targetFaceHeight / bounds.size.y;
+        face.transform.localScale = Vector3.one * scale;
 
         currentFace = face;
-
-        // 🔑 Apply texture AFTER loader finishes (URP-safe)
         StartCoroutine(ApplyTextureNextFrame(face, texture));
-    }
-
-    /* =======================
-       OBJ LOADER (BACKEND MODE)
-       ======================= */
-    private GameObject LoadObjFromBytes(byte[] objData)
-    {
-        using (var stream = new MemoryStream(objData))
-        {
-            OBJLoader loader = new OBJLoader();
-            GameObject obj = loader.Load(stream);
-
-            obj.name = "RuntimeFace";
-            obj.transform.localPosition = Vector3.zero;
-            obj.transform.localRotation = Quaternion.identity;
-            obj.transform.localScale = Vector3.one;
-
-            return obj;
-        }
     }
 
     private IEnumerator ApplyTextureNextFrame(GameObject face, Texture texture)
     {
         yield return null;
 
-        Renderer[] renderers = face.GetComponentsInChildren<Renderer>();
         Shader shader = Shader.Find("Universal Render Pipeline/Unlit");
 
-        if (shader == null)
-        {
-            Debug.LogError("URP Unlit shader not found");
-            yield break;
-        }
-
-        foreach (Renderer r in renderers)
+        foreach (Renderer r in face.GetComponentsInChildren<Renderer>())
         {
             Material m = new Material(shader);
             m.mainTexture = texture;
@@ -412,9 +199,75 @@ public class FaceEngine : MonoBehaviour
         }
     }
 
+    private GameObject LoadObjFromBytes(byte[] objData)
+    {
+        using (var stream = new MemoryStream(objData))
+        {
+            OBJLoader loader = new OBJLoader();
+            return loader.Load(stream);
+        }
+    }
+
+    // =========================
+    // FILE + CAMERA
+    // =========================
+
+    private void OpenUploadPanel()
+    {
+        uploadPanel.SetActive(true);
+        mainPanel.SetActive(false);
+    }
+
+    private void CloseUploadPanel()
+    {
+        uploadPanel.SetActive(false);
+        mainPanel.SetActive(true);
+    }
+
+    private void UploadFromFile()
+    {
+        var paths = StandaloneFileBrowser.OpenFilePanel(
+            "Select Face Image",
+            "",
+            new[] { new ExtensionFilter("Images", "png", "jpg", "jpeg") },
+            false
+        );
+
+        if (paths.Length > 0)
+        {
+            selectedFaceTexture = new Texture2D(2, 2);
+            selectedFaceTexture.LoadImage(File.ReadAllBytes(paths[0]));
+            previewImage.texture = selectedFaceTexture;
+            confirmButton.gameObject.SetActive(true);
+        }
+    }
+
+    private void StartCamera()
+    {
+        webCamTexture = new WebCamTexture();
+        previewImage.texture = webCamTexture;
+        webCamTexture.Play();
+        captureButton.gameObject.SetActive(true);
+    }
+
+    private void CapturePhoto()
+    {
+        Texture2D photo = new Texture2D(webCamTexture.width, webCamTexture.height);
+        photo.SetPixels(webCamTexture.GetPixels());
+        photo.Apply();
+
+        webCamTexture.Stop();
+        selectedFaceTexture = photo;
+        previewImage.texture = photo;
+        confirmButton.gameObject.SetActive(true);
+    }
+
+    // =========================
+    // DATA
+    // =========================
 
     [System.Serializable]
-    private class ServerResponse
+    private class PipelineResponse
     {
         public string objUrl;
         public string textureUrl;
