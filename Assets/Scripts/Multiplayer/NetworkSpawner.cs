@@ -1,181 +1,151 @@
 using UnityEngine;
 using Unity.Netcode;
 using UnityEngine.SceneManagement;
-using TMPro; // Add this for TextMeshPro support
-using System.Collections;
+using TMPro;
 
-
-public enum GameMode
-{
-    None,
-    OneVOne,
-}
 public class NetworkSpawner : NetworkBehaviour
 {
+    [Header("Match Rules")]
     [SerializeField] private int minPlayers = 2;
-    [SerializeField] private string gameSceneName = "Random"; // Set this to your actual game scene name
-    [SerializeField] private string timeoutSceneName = "MainMenu"; // Scene to load when timeout occurs
-    [SerializeField] private float matchmakingTimeout = 50f; // Timeout in seconds
-    private bool gameStarted = false;
-    private float timeElapsed = 0f;
-    private bool timerActive = false;
-    [SerializeField] private GameObject TextBox;
-    [SerializeField] private GameObject playersJoinedText; // Reference to the players joined text gameobject
+    [SerializeField] private int maxPlayers = 3;
+    [SerializeField] private float matchmakingTimeout = 50f;
 
-    [SerializeField] private GameObject TimerText; // Reference to the timer text gameobject
+    [Header("Scenes")]
+    [SerializeField] private string gameSceneName = "Random";
+    [SerializeField] private string timeoutSceneName = "MainMenu";
 
-    private TextMeshProUGUI timerTextComponent;
-    private GameMode currentGameMode = GameMode.None;
-    private int requiredPlayers = 0;
+    [Header("UI")]
+    [SerializeField] private GameObject textBox;
+    [SerializeField] private GameObject timerText;
+    [SerializeField] private GameObject playersJoinedText;
+    [SerializeField] private GameObject forceStartButton; // HOST ONLY
 
-    private string targetSceneName = "";
-    private bool isInitialized = false;
+    private TextMeshProUGUI timerTMP;
+    private TextMeshProUGUI playersTMP;
+
+    private float elapsedTime;
+    private bool timerActive;
+    private bool gameStarted;
+    private bool initialized;
 
     private void Awake()
     {
-        // Get the TextMeshProUGUI component from TimerText GameObject
-        if (TimerText != null)
-        {
-            timerTextComponent = TimerText.GetComponent<TextMeshProUGUI>();
-            if (timerTextComponent == null)
-            {
-                Debug.LogWarning("TimerText GameObject does not have a TextMeshProUGUI component");
-            }
-        }
+        if (timerText != null)
+            timerTMP = timerText.GetComponent<TextMeshProUGUI>();
+
+        if (playersJoinedText != null)
+            playersTMP = playersJoinedText.GetComponent<TextMeshProUGUI>();
+
+        if (forceStartButton != null)
+            forceStartButton.SetActive(false);
     }
 
     public override void OnNetworkSpawn()
     {
-        init();
+        if (!IsServer || initialized) return;
+        initialized = true;
+
+        NetworkManager.Singleton.OnClientConnectedCallback += OnClientConnected;
+        NetworkManager.Singleton.OnClientDisconnectCallback += OnClientDisconnected;
     }
 
     private void OnDestroy()
     {
         if (NetworkManager.Singleton == null) return;
+
         NetworkManager.Singleton.OnClientConnectedCallback -= OnClientConnected;
         NetworkManager.Singleton.OnClientDisconnectCallback -= OnClientDisconnected;
     }
 
-
-    bool initRan = false;
-    // Update the init method to be more flexible
-    public void init()
-    {
-        if (initRan) return;
-        initRan = true;
-        if (NetworkManager.Singleton != null && NetworkManager.Singleton.IsServer)
-        {
-            NetworkManager.Singleton.OnClientConnectedCallback += OnClientConnected;
-            NetworkManager.Singleton.OnClientDisconnectCallback += OnClientDisconnected;
-        }
-    }
+    // =========================
+    // UI BUTTONS
+    // =========================
 
     public void OnJoinPressed()
     {
-        // Start the matchmaking timer
         timerActive = true;
-        timeElapsed = 0f; // Reset timer when joining
+        elapsedTime = 0f;
 
-        // Show the text box
-        if (TextBox != null)
-        {
-            TextBox.SetActive(true);
-        }
+        if (textBox != null) textBox.SetActive(true);
+        if (timerText != null) timerText.SetActive(true);
+    }
 
-        // Show the timer text
-        if (TimerText != null)
+    public void OnForceStartPressed()
+    {
+        if (!IsServer) return;
+
+        if (GetConnectedPlayers() >= minPlayers)
         {
-            TimerText.SetActive(true);
+            Debug.Log("Host forced game start.");
+            StartGame();
         }
     }
 
     public void OnClosePressed()
     {
-        // Stop the matchmaking timer
         timerActive = false;
 
-        // Hide the text box
-        if (TextBox != null)
-        {
-            TextBox.SetActive(false);
-        }
-
-        // Hide the timer text
-        if (TimerText != null)
-        {
-            TimerText.SetActive(false);
-        }
-
-        // If we're the host, shut down the network
-        if (NetworkManager.Singleton != null && (NetworkManager.Singleton.IsHost || NetworkManager.Singleton.IsServer || IsOwner))
+        if (NetworkManager.Singleton != null &&
+            (NetworkManager.Singleton.IsHost || NetworkManager.Singleton.IsServer))
         {
             NetworkManager.Singleton.Shutdown();
         }
 
-    }
-
-    private void Update()
-    {
-        // Only run the timer if it's active and game hasn't started
-        if (timerActive && !gameStarted)
-        {
-            timeElapsed += Time.deltaTime;
-            UpdateTimerDisplay();
-            int connectedPlayers = GetConnectedPlayers();
-            if (playersJoinedText != null)
-            {
-                playersJoinedText.GetComponent<TextMeshProUGUI>().text = $"Finding players...";
-            }
-
-            // Check if timeout period has elapsed
-            if (timeElapsed >= matchmakingTimeout)
-            {
-                timerActive = false;
-                HandleMatchmakingTimeout();
-            }
-        }
-    }
-
-    private void UpdateTimerDisplay()
-    {
-        // Update the timer text if the component exists
-        if (timerTextComponent != null)
-        {
-            float remainingTime = Mathf.Max(0, matchmakingTimeout - timeElapsed);
-            int seconds = Mathf.FloorToInt(remainingTime);
-            timerTextComponent.text = $"Finding Match: {seconds}s";
-        }
-    }
-
-    private void HandleMatchmakingTimeout()
-    {
-        Debug.Log("Matchmaking timed out after " + matchmakingTimeout + " seconds");
-
-        // If we're the host, shut down the network
-        if (NetworkManager.Singleton != null && (NetworkManager.Singleton.IsHost || NetworkManager.Singleton.IsServer))
-        {
-            NetworkManager.Singleton.Shutdown();
-        }
-
-        // Hide UI elements
-        if (TextBox != null)
-        {
-            TextBox.SetActive(false);
-        }
-
-        if (TimerText != null)
-        {
-            TimerText.SetActive(false);
-        }
-
-        // Load the timeout scene (e.g., main menu)
         SceneManager.LoadScene(timeoutSceneName);
     }
 
+    // =========================
+    // UPDATE LOOP
+    // =========================
+
+    private void Update()
+    {
+        if (!timerActive || gameStarted) return;
+
+        elapsedTime += Time.deltaTime;
+        UpdateUI();
+
+        if (elapsedTime >= matchmakingTimeout)
+        {
+            HandleTimeout();
+        }
+    }
+
+    private void UpdateUI()
+    {
+        int connected = GetConnectedPlayers();
+
+        if (playersTMP != null)
+            playersTMP.text = $"Players: {connected}/{maxPlayers}";
+
+        if (timerTMP != null)
+        {
+            int remaining = Mathf.CeilToInt(matchmakingTimeout - elapsedTime);
+            timerTMP.text = $"Finding Match: {remaining}s";
+        }
+
+        // Host-only force start button
+        if (forceStartButton != null)
+        {
+            bool canForceStart =
+                IsServer &&
+                connected >= minPlayers &&
+                connected < maxPlayers;
+
+            forceStartButton.SetActive(canForceStart);
+        }
+    }
+
+    // =========================
+    // NETWORK EVENTS
+    // =========================
+
     private void OnClientConnected(ulong clientId)
     {
-        Debug.Log("Client connected: " + clientId);
-        if (GetConnectedPlayers() >= minPlayers)
+        Debug.Log($"Client connected: {clientId}");
+
+        // Optional auto-start when full
+        if (GetConnectedPlayers() == maxPlayers)
         {
             StartGame();
         }
@@ -183,61 +153,58 @@ public class NetworkSpawner : NetworkBehaviour
 
     private void OnClientDisconnected(ulong clientId)
     {
-        Debug.Log("Client disconnected: " + clientId);
+        Debug.Log($"Client disconnected: {clientId}");
+
+        if (forceStartButton != null)
+            forceStartButton.SetActive(false);
     }
+
+    // =========================
+    // MATCH FLOW
+    // =========================
+
     private void StartGame()
     {
         if (gameStarted) return;
-        if (NetworkManager.Singleton == null)
-        {
-            Debug.LogWarning("Cannot start game: NetworkManager missing.");
-            return;
-        }
 
         gameStarted = true;
-        timerActive = false; // Stop the timer when game starts
-        Debug.Log("Starting game with enough players!");
+        timerActive = false;
 
-        // Hide UI elements
-        if (TextBox != null)
+        Debug.Log("Starting co-op game.");
+
+        if (textBox != null) textBox.SetActive(false);
+        if (timerText != null) timerText.SetActive(false);
+        if (forceStartButton != null) forceStartButton.SetActive(false);
+
+        NetworkManager.Singleton.SceneManager.LoadScene(
+            gameSceneName,
+            LoadSceneMode.Single
+        );
+    }
+
+    private void HandleTimeout()
+    {
+        Debug.Log("Matchmaking timed out.");
+
+        timerActive = false;
+
+        if (NetworkManager.Singleton != null &&
+            (NetworkManager.Singleton.IsHost || NetworkManager.Singleton.IsServer))
         {
-            TextBox.SetActive(false);
+            NetworkManager.Singleton.Shutdown();
         }
 
-        if (TimerText != null)
-        {
-            TimerText.SetActive(false);
-        }
-
-        // Load the game scene for all clients
-        Debug.Log("Loading game scene: " + gameSceneName);
-        NetworkManager.Singleton.SceneManager.LoadScene(gameSceneName, LoadSceneMode.Single);
+        SceneManager.LoadScene(timeoutSceneName);
     }
 
-    public GameMode GetCurrentGameMode()
+    // =========================
+    // HELPERS
+    // =========================
+
+    private int GetConnectedPlayers()
     {
-        return currentGameMode;
+        return NetworkManager.Singleton != null
+            ? NetworkManager.Singleton.ConnectedClients.Count
+            : 0;
     }
-
-    public int GetRequiredPlayers()
-    {
-        return requiredPlayers;
-    }
-
-    public int GetConnectedPlayers()
-    {
-        return NetworkManager.Singleton != null ? NetworkManager.Singleton.ConnectedClients.Count : 0;
-    }
-
-    public bool IsGameStarted()
-    {
-        return gameStarted;
-    }
-
-    public bool IsInitialized()
-    {
-        return isInitialized;
-    }
-
 }
-
