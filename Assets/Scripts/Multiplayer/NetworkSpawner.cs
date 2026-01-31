@@ -100,6 +100,11 @@ public class NetworkSpawner : NetworkBehaviour
     {
         Debug.Log($"Client connected: {clientId}");
 
+        // 🔧 Guard added (extra safety)
+        if (uploadPhaseStarted)
+            return;
+
+        // Auto-start upload ONLY when lobby is full
         if (GetConnectedPlayers() == maxPlayers)
         {
             StartUploadPhase();
@@ -122,6 +127,7 @@ public class NetworkSpawner : NetworkBehaviour
         if (textBox != null) textBox.SetActive(false);
         if (timerText != null) timerText.SetActive(false);
 
+        // 🔑 Delegates UI + flow control to UIManager
         FindObjectOfType<UIManager>()?.StartUploadPhaseServerRpc();
     }
 

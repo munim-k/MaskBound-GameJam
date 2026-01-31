@@ -3,15 +3,21 @@ using UnityEngine.UI;
 using UnityEngine.Networking;
 using Unity.Netcode;
 using System.Collections;
+using System.Collections.Generic;
 using System.IO;
 using Dummiesman;
 using SFB;
 
 public class FaceEngine : NetworkBehaviour
 {
+    /* =========================
+       SETTINGS
+       ========================= */
+
     [Header("MODE")]
     [SerializeField] private bool testMode = false;
 
+    [Header("SPAWN")]
     [SerializeField] private float targetFaceHeight = 0.25f;
     [SerializeField] private float faceDistanceFromCamera = 1.2f;
 
@@ -19,10 +25,15 @@ public class FaceEngine : NetworkBehaviour
     [SerializeField] private GameObject facePrefab;
     [SerializeField] private Texture faceTexture;
 
+    /* =========================
+       UI
+       ========================= */
+
     [Header("UI")]
     [SerializeField] private GameObject uploadPanel;
     [SerializeField] private GameObject mainPanel;
     [SerializeField] private RawImage previewImage;
+
     [SerializeField] private Button openPanelButton;
     [SerializeField] private Button closePanelButton;
     [SerializeField] private Button uploadFileButton;
@@ -30,16 +41,29 @@ public class FaceEngine : NetworkBehaviour
     [SerializeField] private Button captureButton;
     [SerializeField] private Button confirmButton;
 
-    [Header("Backend")]
+    /* =========================
+       BACKEND
+       ========================= */
+
+    [Header("Pipeline Server")]
     [SerializeField] private string uploadUrl;
+
+    /* =========================
+       RUNTIME
+       ========================= */
 
     private WebCamTexture webCamTexture;
     private Texture2D selectedFaceTexture;
+
+    // ❌ OLD single-face logic (kept, but no longer used)
     private GameObject currentFace;
 
-    // =========================
-    // UNITY
-    // =========================
+    // ✅ NEW: one face per player
+    private Dictionary<ulong, GameObject> spawnedFaces = new Dictionary<ulong, GameObject>();
+
+    /* =========================
+       UNITY
+       ========================= */
 
     private void Awake()
     {
@@ -54,9 +78,9 @@ public class FaceEngine : NetworkBehaviour
         confirmButton.onClick.AddListener(ConfirmImage);
     }
 
-    // =========================
-    // CONFIRM
-    // =========================
+    /* =========================
+       CONFIRM
+       ========================= */
 
     private void ConfirmImage()
     {
@@ -64,36 +88,47 @@ public class FaceEngine : NetworkBehaviour
 
         if (testMode)
         {
-            // Local-only test
-            SpawnFace(Instantiate(facePrefab), faceTexture);
-            FindObjectOfType<UIManager>()?.ConfirmUploadServerRpc();
+            SpawnFace(NetworkManager.Singleton.LocalClientId,
+                      Instantiate(facePrefab),
+                      faceTexture);
+
             return;
         }
 
         StartCoroutine(SendImageToPipelineServer());
     }
 
-    // =========================
-    // PIPELINE SERVER
-    // =========================
+    /* =========================
+       PIPELINE SERVER
+       ========================= */
 
     private IEnumerator SendImageToPipelineServer()
     {
+        if (selectedFaceTexture == null)
+        {
+            Debug.LogError("No face texture selected");
+            yield break;
+        }
+
         byte[] jpg = selectedFaceTexture.EncodeToJPG();
+
+        string sessionId = NetworkManager.Singleton.NetworkConfig.NetworkTransport.GetType().Name;
+        string playerId = NetworkManager.Singleton.LocalClientId.ToString();
 
         WWWForm form = new WWWForm();
         form.AddBinaryData("file", jpg, "face.jpg", "image/jpeg");
+        form.AddField("sessionId", sessionId);
+        form.AddField("playerId", playerId);
 
         UnityWebRequest req = UnityWebRequest.Post(uploadUrl, form);
         yield return req.SendWebRequest();
 
         if (req.result != UnityWebRequest.Result.Success)
         {
-            Debug.LogError(req.error);
+            Debug.LogError("Pipeline upload failed: " + req.error);
             yield break;
         }
 
-        // 🔑 Expect JSON with URLs
         PipelineResponse response =
             JsonUtility.FromJson<PipelineResponse>(req.downloadHandler.text);
 
@@ -104,33 +139,32 @@ public class FaceEngine : NetworkBehaviour
             yield break;
         }
 
-        // 🔑 Sync URLs via Netcode
+        // 🔑 Send URL + owner info
         SendFaceUrlsServerRpc(response.objUrl, response.textureUrl);
-
-        FindObjectOfType<UIManager>()?.ConfirmUploadServerRpc();
     }
 
-    // =========================
-    // NETCODE SYNC (URL ONLY)
-    // =========================
+    /* =========================
+       NETCODE (URL ONLY)
+       ========================= */
 
     [ServerRpc(RequireOwnership = false)]
-    private void SendFaceUrlsServerRpc(string objUrl, string textureUrl)
+    private void SendFaceUrlsServerRpc(string objUrl, string textureUrl, ServerRpcParams rpcParams = default)
     {
-        BroadcastFaceUrlsClientRpc(objUrl, textureUrl);
+        ulong ownerId = rpcParams.Receive.SenderClientId;
+        BroadcastFaceUrlsClientRpc(ownerId, objUrl, textureUrl);
     }
 
     [ClientRpc]
-    private void BroadcastFaceUrlsClientRpc(string objUrl, string textureUrl)
+    private void BroadcastFaceUrlsClientRpc(ulong ownerId, string objUrl, string textureUrl)
     {
-        StartCoroutine(DownloadAndSpawnFace(objUrl, textureUrl));
+        StartCoroutine(DownloadAndSpawnFace(ownerId, objUrl, textureUrl));
     }
 
-    // =========================
-    // DOWNLOAD + SPAWN
-    // =========================
+    /* =========================
+       DOWNLOAD + SPAWN
+       ========================= */
 
-    private IEnumerator DownloadAndSpawnFace(string objUrl, string texUrl)
+    private IEnumerator DownloadAndSpawnFace(ulong ownerId, string objUrl, string texUrl)
     {
         UnityWebRequest objReq = UnityWebRequest.Get(objUrl);
         yield return objReq.SendWebRequest();
@@ -154,22 +188,39 @@ public class FaceEngine : NetworkBehaviour
         Texture2D tex = DownloadHandlerTexture.GetContent(texReq);
 
         GameObject face = LoadObjFromBytes(objData);
-        SpawnFace(face, tex);
+
+        SpawnFace(ownerId, face, tex);
+
+        // 🔑 NOW the face is actually ready
+        NotifyFaceReadyServerRpc();
     }
 
-    // =========================
-    // SPAWN
-    // =========================
-
-    private void SpawnFace(GameObject face, Texture texture)
+    [ServerRpc(RequireOwnership = false)]
+    private void NotifyFaceReadyServerRpc(ServerRpcParams rpcParams = default)
     {
-        if (currentFace != null)
-            Destroy(currentFace);
+        FindObjectOfType<UIManager>()?.NotifyFaceReady(rpcParams.Receive.SenderClientId);
+    }
+
+    /* =========================
+       SPAWN LOGIC
+       ========================= */
+
+    private void SpawnFace(ulong ownerId, GameObject face, Texture texture)
+    {
+        if (spawnedFaces.ContainsKey(ownerId))
+            Destroy(spawnedFaces[ownerId]);
 
         Camera cam = Camera.main;
-        Vector3 pos = cam.transform.position + cam.transform.forward * faceDistanceFromCamera;
+        if (cam == null)
+        {
+            Debug.LogError("Main Camera not found");
+            return;
+        }
 
-        face.transform.position = pos;
+        Vector3 basePos = cam.transform.position + cam.transform.forward * faceDistanceFromCamera;
+
+        // Simple spacing per player
+        face.transform.position = basePos + Vector3.right * (ownerId * 0.6f);
         face.transform.rotation = Quaternion.LookRotation(face.transform.position - cam.transform.position);
         face.transform.Rotate(0f, 180f, 0f);
 
@@ -181,7 +232,8 @@ public class FaceEngine : NetworkBehaviour
         float scale = targetFaceHeight / bounds.size.y;
         face.transform.localScale = Vector3.one * scale;
 
-        currentFace = face;
+        spawnedFaces[ownerId] = face;
+
         StartCoroutine(ApplyTextureNextFrame(face, texture));
     }
 
@@ -190,7 +242,6 @@ public class FaceEngine : NetworkBehaviour
         yield return null;
 
         Shader shader = Shader.Find("Universal Render Pipeline/Unlit");
-
         foreach (Renderer r in face.GetComponentsInChildren<Renderer>())
         {
             Material m = new Material(shader);
@@ -208,9 +259,9 @@ public class FaceEngine : NetworkBehaviour
         }
     }
 
-    // =========================
-    // FILE + CAMERA
-    // =========================
+    /* =========================
+       UI HELPERS
+       ========================= */
 
     private void OpenUploadPanel()
     {
@@ -247,24 +298,32 @@ public class FaceEngine : NetworkBehaviour
         webCamTexture = new WebCamTexture();
         previewImage.texture = webCamTexture;
         webCamTexture.Play();
+
         captureButton.gameObject.SetActive(true);
     }
 
     private void CapturePhoto()
     {
-        Texture2D photo = new Texture2D(webCamTexture.width, webCamTexture.height);
+        Texture2D photo = new Texture2D(
+            webCamTexture.width,
+            webCamTexture.height,
+            TextureFormat.RGB24,
+            false
+        );
+
         photo.SetPixels(webCamTexture.GetPixels());
         photo.Apply();
 
         webCamTexture.Stop();
+
         selectedFaceTexture = photo;
         previewImage.texture = photo;
         confirmButton.gameObject.SetActive(true);
     }
 
-    // =========================
-    // DATA
-    // =========================
+    /* =========================
+       DATA
+       ========================= */
 
     [System.Serializable]
     private class PipelineResponse
