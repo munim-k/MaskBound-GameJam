@@ -73,8 +73,6 @@ public class SwordAttack : MonoBehaviour
 
             if (!alreadyHit.Contains(enemyRoot))
             {
-                Debug.Log("Hit " + enemyRoot.name);
-            
                 // Apply damage logic here
                 enemyRoot.GetComponent<EnemyHealth>().TakeDamage(attackDamage);
 

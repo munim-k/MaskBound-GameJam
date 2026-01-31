@@ -17,7 +17,6 @@ public class EnemyHealth : MonoBehaviour
 
     public void TakeDamage(float damage)
     {
-        Debug.Log("Hit now health: " + currentHealth  + "damage: " + damage  );
         currentHealth -= damage;
         healthBar.value = currentHealth;
 

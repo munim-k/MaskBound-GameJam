@@ -20,6 +20,8 @@ public class FluidThirdPersonController_OldInput : MonoBehaviour
     public Transform cameraTarget;           // Cinemachine follows/looks at this
     public Camera mainCamera;                // If null, uses Camera.main
 
+    [SerializeField] private Animator animator;
+
     [Header("Move")]
     public float walkSpeed = 4.0f;
     public float sprintSpeed = 6.5f;
