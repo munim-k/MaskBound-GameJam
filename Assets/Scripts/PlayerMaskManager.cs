@@ -8,7 +8,7 @@ public class PlayerMaskManager : NetworkBehaviour
     [SerializeField] private MaskType currentMask;
     public MaskType CurrentMask => currentMask;
 
-    private ulong pendingRequester;
+    private ulong? pendingRequester = null;  // ✅ FIXED: Use nullable to allow Client 0
     private bool hasMask = false;
 
     public override void OnNetworkSpawn()
@@ -89,6 +89,10 @@ public class PlayerMaskManager : NetworkBehaviour
     [Rpc(SendTo.Owner)]
     public void ReceiveMaskRequestClientRpc(ulong requesterClientId, MaskType requestedMask)
     {
+        Debug.Log($"[PlayerMaskManager] >>>>>> ReceiveMaskRequestClientRpc ENTRY <<<<<<");
+        Debug.Log($"[PlayerMaskManager] Received swap request from client {requesterClientId} for {requestedMask}");
+        Debug.Log($"[PlayerMaskManager] Current state: currentMask={currentMask}, pendingRequester (BEFORE)={pendingRequester}, IsOwner={IsOwner}");
+        
         // Validation: Still own the requested mask?
         if (currentMask != requestedMask)
         {
@@ -96,18 +100,21 @@ public class PlayerMaskManager : NetworkBehaviour
             return;
         }
 
+        Debug.Log($"[PlayerMaskManager] Setting pendingRequester from {pendingRequester} to {requesterClientId}");
         pendingRequester = requesterClientId;
-        
-        Debug.Log($"[PlayerMaskManager] Received swap request from client {requesterClientId} for {requestedMask}");
+        Debug.Log($"[PlayerMaskManager] pendingRequester is now: {pendingRequester}");
         
         if (MaskRequestUI.Instance != null)
         {
+            Debug.Log($"[PlayerMaskManager] Calling MaskRequestUI.Instance.Show()");
             MaskRequestUI.Instance.Show();
         }
         else
         {
             Debug.LogError("[PlayerMaskManager] MaskRequestUI.Instance is null!");
         }
+        
+        Debug.Log($"[PlayerMaskManager] <<<<<< ReceiveMaskRequestClientRpc EXIT <<<<<<");
     }
 
     /// <summary>
@@ -127,18 +134,18 @@ public class PlayerMaskManager : NetworkBehaviour
 
             Debug.Log($"[PlayerMaskManager] IsOwner check passed. pendingRequester={pendingRequester}");
 
-            if (pendingRequester == 0)
+            if (pendingRequester == null)  // ✅ FIXED: Check for null instead of 0
             {
                 Debug.LogWarning("[PlayerMaskManager] No pending request to accept!");
                 return;
             }
 
-            Debug.Log($"[PlayerMaskManager] CLIENT {OwnerClientId}: Accepting swap request from client {pendingRequester}");
-            Debug.Log($"[PlayerMaskManager] CLIENT {OwnerClientId}: Calling AcceptRequestServerRpc({pendingRequester})");
-            AcceptRequestServerRpc(pendingRequester);
+            Debug.Log($"[PlayerMaskManager] CLIENT {OwnerClientId}: Accepting swap request from client {pendingRequester.Value}");
+            Debug.Log($"[PlayerMaskManager] CLIENT {OwnerClientId}: Calling AcceptRequestServerRpc({pendingRequester.Value})");
+            AcceptRequestServerRpc(pendingRequester.Value);  // ✅ FIXED: Use .Value
             
             // Clear pending request
-            pendingRequester = 0;
+            pendingRequester = null;  // ✅ FIXED: Set to null instead of 0
             Debug.Log($"[PlayerMaskManager] CLIENT {OwnerClientId}: Cleared pending requester");
         }
         catch (System.Exception e)
