@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using Unity.Netcode;
 
 /// <summary>
 /// OLD Input System version (Project Settings -> Input Manager).
@@ -14,7 +15,7 @@
 /// - Assign cameraTarget in inspector.
 /// </summary>
 [RequireComponent(typeof(CharacterController))]
-public class FluidThirdPersonController_OldInput : MonoBehaviour
+public class FluidThirdPersonController_OldInput : NetworkBehaviour
 {
     [Header("References")]
     public Transform cameraTarget;           // Cinemachine follows/looks at this
@@ -117,6 +118,8 @@ public class FluidThirdPersonController_OldInput : MonoBehaviour
 
     private void Update()
     {
+        if (!IsOwner) return;
+
         ReadInputs();
 
         GroundCheck();

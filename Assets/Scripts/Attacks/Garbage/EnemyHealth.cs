@@ -1,37 +1,74 @@
 using UnityEngine;
+using Unity.Netcode;
 using UnityEngine.UI;
 
-public class EnemyHealth : MonoBehaviour
+public class EnemyHealth : NetworkBehaviour
 {
-    [SerializeField] Slider healthBar;
-    
-    // State
-    private float currentHealth;
-    [SerializeField] float maxHealth;
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
+    [SerializeField] private Slider healthBar;
+    [SerializeField] private float maxHealth = 100f;
+
+    public NetworkVariable<float> currentHealth = new NetworkVariable<float>(
+        0,
+        NetworkVariableReadPermission.Everyone,
+        NetworkVariableWritePermission.Server
+    );
+
+    public override void OnNetworkSpawn()
     {
+        // 1. Initialize UI values
         healthBar.maxValue = maxHealth;
-        SetHealth(maxHealth);
+        
+        // 2. Force an immediate UI update for late-joiners
+        updateHealthUI(0, currentHealth.Value);
+
+        // 3. Subscribe to future changes
+        currentHealth.OnValueChanged += updateHealthUI;
+
+        // 4. Server-only: Set the starting health
+        if (IsServer)
+        {
+            currentHealth.Value = maxHealth;
+        }
+    }
+
+    public override void OnNetworkDespawn()
+    {
+        // Always unsubscribe to prevent memory leaks/errors
+        currentHealth.OnValueChanged -= updateHealthUI;
     }
 
     public void TakeDamage(float damage)
     {
-        currentHealth -= damage;
-        healthBar.value = currentHealth;
-
-        if (currentHealth <= 0) Die();
+        if (!IsServer)
+        {
+            updateHealthServerRpc(damage);
+        }
+        else
+        {
+            ApplyDamage(damage);
+        }
     }
 
-    public void SetHealth(float health)
+    [ServerRpc(RequireOwnership = false)]
+    private void updateHealthServerRpc(float damage)
     {
-        currentHealth = health;
-        healthBar.value = currentHealth;
+        ApplyDamage(damage);
     }
 
-    private void Die()
+    private void ApplyDamage(float damage)
     {
-        Debug.Log("Died");
-        Destroy(gameObject);
+        currentHealth.Value -= damage;
+        if (currentHealth.Value <= 0) 
+        {
+            // Use NetworkObject.Despawn for networked objects instead of Destroy
+            GetComponent<NetworkObject>().Despawn();
+        }
+    }
+
+    // The delegate for OnValueChanged requires these parameters
+    private void updateHealthUI(float previousValue, float newValue)
+    {
+        Debug.Log($"Updating UI: {newValue}");
+        healthBar.value = newValue;
     }
 }
