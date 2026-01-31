@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.IO;
 using Dummiesman;
 using SFB;
+using UnityEngine.SceneManagement;
 
 public class FaceEngine : NetworkBehaviour
 {
@@ -67,6 +68,7 @@ public class FaceEngine : NetworkBehaviour
 
     private void Awake()
     {
+        DontDestroyOnLoad(gameObject);
         confirmButton.gameObject.SetActive(false);
         captureButton.gameObject.SetActive(false);
 
@@ -77,6 +79,36 @@ public class FaceEngine : NetworkBehaviour
         captureButton.onClick.AddListener(CapturePhoto);
         confirmButton.onClick.AddListener(ConfirmImage);
     }
+
+    public override void OnNetworkSpawn()
+    {
+        SceneManager.sceneLoaded += OnSceneLoaded;
+    }
+
+    private void OnDestroy()
+    {
+        SceneManager.sceneLoaded -= OnSceneLoaded;
+    }
+
+    private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        if (scene.name != "Game")
+            return;
+
+        Debug.Log("Game scene loaded – faces carried over");
+
+        foreach (var kvp in spawnedFaces)
+        {
+            GameObject face = kvp.Value;
+            if (face == null) continue;
+
+            // Reset transform for now (temporary placement)
+            face.transform.SetParent(null);
+            face.transform.position = Vector3.zero;
+            face.transform.rotation = Quaternion.identity;
+        }
+    }
+
 
     /* =========================
        CONFIRM

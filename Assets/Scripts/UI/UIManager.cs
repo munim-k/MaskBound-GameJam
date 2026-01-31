@@ -155,16 +155,16 @@ public class UIManager : NetworkBehaviour
     // HOST START GAME (NEW)
     // =========================
 
-    public void OnStartGamePressed()
-    {
-        if (!IsServer)
-            return;
+    // public void OnStartGamePressed()
+    // {
+    //     if (!IsServer)
+    //         return;
 
-        NetworkManager.Singleton.SceneManager.LoadScene(
-            "Game",
-            UnityEngine.SceneManagement.LoadSceneMode.Single
-        );
-    }
+    //     NetworkManager.Singleton.SceneManager.LoadScene(
+    //         "Game",
+    //         UnityEngine.SceneManagement.LoadSceneMode.Single
+    //     );
+    // }
 
     // =========================
     // LOCAL UI HELPERS (UNCHANGED)

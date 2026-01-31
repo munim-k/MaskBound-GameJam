@@ -11,7 +11,11 @@ public class NetworkSpawner : NetworkBehaviour
     [SerializeField] private float matchmakingTimeout = 50f;
 
     [Header("Scenes")]
+
+    [SerializeField] private string gameSceneName = "Game";
     [SerializeField] private string timeoutSceneName = "MainMenu";
+
+
 
     [Header("UI")]
     [SerializeField] private GameObject textBox;
@@ -145,7 +149,7 @@ public class NetworkSpawner : NetworkBehaviour
 
         SceneManager.LoadScene(timeoutSceneName);
         // NetworkManager.Singleton.SceneManager.LoadScene(timeoutSceneName);
-        
+
     }
 
     private int GetConnectedPlayers()
@@ -153,5 +157,17 @@ public class NetworkSpawner : NetworkBehaviour
         return NetworkManager.Singleton != null
             ? NetworkManager.Singleton.ConnectedClients.Count
             : 0;
+    }
+
+    public void OnStartGamePressed()
+    {
+        if (NetworkManager.Singleton == null)
+        {
+            Debug.LogWarning("Cannot start game: NetworkManager missing.");
+            return;
+        }
+
+        Debug.Log("Loading game scene: " + gameSceneName);
+        NetworkManager.Singleton.SceneManager.LoadScene(gameSceneName, LoadSceneMode.Single);
     }
 }

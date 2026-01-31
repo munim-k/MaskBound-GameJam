@@ -47,7 +47,7 @@ public class EnemyAttack : NetworkBehaviour
         float dist = Vector3.Distance(transform.position, target.position);
 
         // This log will tell us exactly why the 'if' statement is failing
-        Debug.Log($"Distance to player: {dist}. Required Range: {attackRange}");
+        // Debug.Log($"Distance to player: {dist}. Required Range: {attackRange}");
 
         if (dist <= attackRange)
         {
