@@ -15,17 +15,20 @@ public class EnemyAttack : NetworkBehaviour
     [Tooltip("Total duration of the attack animation")]
     [SerializeField] private float animationDuration = 1.5f;
 
-    [Header("Layers & Refs")]
+    [Header("Detection & References")]
     [SerializeField] private LayerMask playerLayer;
-    [SerializeField] private Animator _animator; // Drag Child Model here manually
+    [SerializeField] private Transform attackPoint; // <--- The new Detection Point
+    [SerializeField] private Animator _animator;
+    
+    // Internal State
     private EnemyMove _movement;
-
     private float _lastAttackTime;
     private bool _isAttacking;
 
     void Awake()
     {
         _movement = GetComponent<EnemyMove>();
+        
         // Fail-safe if you forgot to drag it in
         if (_animator == null) _animator = GetComponentInChildren<Animator>();
     }
@@ -45,6 +48,8 @@ public class EnemyAttack : NetworkBehaviour
         Transform target = _movement.GetPlayerTransform();
         if (target == null) return;
 
+        // Note: We check distance from the Enemy Root, not the attack point, 
+        // to decide when to START the attack.
         float dist = Vector3.Distance(transform.position, target.position);
     
         if (dist <= attackRange)
@@ -52,11 +57,6 @@ public class EnemyAttack : NetworkBehaviour
             StartCoroutine(MeleeAttackRoutine());
         }
     }
-    
-    [Header("Detection & References")]
-    [SerializeField] private Transform attackPoint; // <--- NEW FIELD
-    [SerializeField] private Animator _animator;
-    private EnemyMove _movement;
 
     private IEnumerator MeleeAttackRoutine()
     {
@@ -69,14 +69,13 @@ public class EnemyAttack : NetworkBehaviour
         // 2. Play Animation on ALL clients
         PlayAttackAnimClientRpc();
 
-        // 3. Wait for the "Impact" moment (Manually tuned)
+        // 3. Wait for the "Impact" moment
         yield return new WaitForSeconds(impactDelay);
 
         // 4. Deal Damage (Server Only)
         CheckHit();
 
         // 5. Wait for animation to finish
-        // We subtract impactDelay so the total wait equals animationDuration
         yield return new WaitForSeconds(animationDuration - impactDelay);
 
         // 6. Resume
@@ -86,9 +85,11 @@ public class EnemyAttack : NetworkBehaviour
 
     private void CheckHit()
     {
-        // Sphere slightly in front and up
-        Vector3 hitCenter = transform.position + transform.forward + (Vector3.up * 1f);
-        Collider[] hitPlayers = Physics.OverlapSphere(hitCenter, attackRange, playerLayer);
+        // USE THE NEW ATTACK POINT
+        // If attackPoint is null (you forgot to assign it), fall back to the old math.
+        Vector3 point = attackPoint != null ? attackPoint.position : (transform.position + transform.forward);
+
+        Collider[] hitPlayers = Physics.OverlapSphere(point, attackRange, playerLayer);
 
         foreach (Collider obj in hitPlayers)
         {
@@ -112,7 +113,10 @@ public class EnemyAttack : NetworkBehaviour
 
     private void OnDrawGizmosSelected()
     {
+        // Update Gizmo to show the Attack Point
+        Vector3 point = attackPoint != null ? attackPoint.position : (transform.position + transform.forward);
+
         Gizmos.color = Color.red;
-        Gizmos.DrawWireSphere(transform.position + transform.forward + (Vector3.up * 1f), attackRange);
+        Gizmos.DrawWireSphere(point, attackRange);
     }
 }

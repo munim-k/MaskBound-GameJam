@@ -24,7 +24,6 @@ public class FluidThirdPersonController_OldInput : NetworkBehaviour
     [SerializeField] private Animator animator;
 
     [Header("Move")]
-    public float walkSpeed = 4.0f;
     public float sprintSpeed = 6.5f;
     public float acceleration = 18f;
     public float deceleration = 22f;
@@ -216,7 +215,7 @@ public class FluidThirdPersonController_OldInput : NetworkBehaviour
             return;
         }
 
-        float targetMaxSpeed = _sprintHeld ? sprintSpeed : walkSpeed;
+        float targetMaxSpeed = sprintSpeed;
         float inputMag = Mathf.Clamp01(_moveInput.magnitude);
         float desiredSpeed = targetMaxSpeed * inputMag;
 
