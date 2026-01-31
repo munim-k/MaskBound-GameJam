@@ -53,6 +53,7 @@ GameObject:
   - component: {fileID: 6998603940307985225}
   - component: {fileID: 4802500729274607587}
   - component: {fileID: 4932299218167377670}
+  - component: {fileID: 7406562978660993701}
   m_Layer: 8
   m_Name: Player
   m_TagString: Player
@@ -122,9 +123,6 @@ MonoBehaviour:
   attackDuration: 0.7
   attackCooldown: 0.7
   attackDamage: 2
-  hitLayerMask:
-    serializedVersion: 2
-    m_Bits: 128
   attackPoint: {fileID: 5827698352411964473}
   attackRange: 1.1
   enemyLayers:
@@ -479,7 +477,20 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerMaskManager
   ShowTopMostFoldoutHeaderGroup: 1
-  currentMask: 0
+--- !u!114 &7406562978660993701
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1033921092754182687}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0e0fe6b62c888be4db5765ab684153b3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MaskBound.Player.PlayerAffinity
+  ShowTopMostFoldoutHeaderGroup: 1
+  affinityTarget: 0
 --- !u!1 &4395558326344460407
 GameObject:
   m_ObjectHideFlags: 0

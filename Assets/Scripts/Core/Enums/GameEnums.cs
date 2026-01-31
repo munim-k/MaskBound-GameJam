@@ -98,24 +98,31 @@ namespace MaskBound.Core.Enums
     }
 
     /// <summary>
-    /// Enemy elemental variant
+    /// Enemy elemental variant (GDD-specified)
+    /// These elements are countered by specific masks for 2x damage multiplier
     /// </summary>
     public enum EnemyElement
     {
         /// <summary>
-        /// Fire element (weak to Earth affinity)
+        /// Ice element - Countered by Fire Mask (2x damage)
+        /// Applies slow debuff to players
+        /// Example: Ice Troll, Ice Scorpion Man, Ice Gargoyle
         /// </summary>
-        Fire,
+        Ice,
         
         /// <summary>
-        /// Lightning element (weak to Fire affinity)
+        /// Metal element - Countered by Lightning Mask (2x damage)
+        /// High defense stat
+        /// Example: Metal Troll, Metal Scorpion Man, Metal Gargoyle
         /// </summary>
-        Lightning,
+        Metal,
         
         /// <summary>
-        /// Earth element (weak to Lightning affinity)
+        /// Rock element - Countered by Earth Mask (2x damage)
+        /// High poise stat (harder to stagger)
+        /// Example: Rock Troll, Rock Scorpion Man, Rock Gargoyle
         /// </summary>
-        Earth
+        Rock
     }
 
     /// <summary>
