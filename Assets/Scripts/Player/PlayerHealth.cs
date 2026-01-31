@@ -1,7 +1,7 @@
 using UnityEngine;
 using Unity.Netcode;
 using UnityEngine.UI;
-using TMPro; // Standard for text in modern Unity
+using TMPro;
 
 public class PlayerHealth : NetworkBehaviour
 {
@@ -87,7 +87,6 @@ public class PlayerHealth : NetworkBehaviour
 
     private void Die()
     {
-        Debug.Log($"{gameObject.name} has died.");
         // Logic for respawning or disabling player goes here
     }
 }

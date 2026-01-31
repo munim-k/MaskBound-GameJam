@@ -2233,7 +2233,7 @@ MonoBehaviour:
   takePictureButton: {fileID: 1139580216}
   captureButton: {fileID: 936599283}
   confirmButton: {fileID: 1045007060}
-  uploadUrl: http://10.0.22.221:8000/fit
+  uploadUrl: https://nonperverted-deirdre-laboringly.ngrok-free.dev/fit
 --- !u!114 &1728152921
 MonoBehaviour:
   m_ObjectHideFlags: 0
