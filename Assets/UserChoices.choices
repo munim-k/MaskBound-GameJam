@@ -30,7 +30,7 @@ MonoBehaviour:
     - QuestionId: PlayerCount
       Answers:
       - 4
-  Preset: 11
+  Preset: 2
   SelectedSolutions:
-    SelectedHostingModel: 2
-    SelectedNetcodeSolution: 2
+    SelectedHostingModel: 1
+    SelectedNetcodeSolution: 1
