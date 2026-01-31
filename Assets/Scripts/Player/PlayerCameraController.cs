@@ -1,26 +1,51 @@
 using Unity.Netcode;
 using UnityEngine;
+using Cinemachine;
 
 public class PlayerCameraController : NetworkBehaviour
 {
-    [SerializeField] private Camera fpsCamera;
+    [Header("Cinemachine")]
+    [SerializeField] private CinemachineFreeLook freeLookCamera;
+    [SerializeField] private Transform playerLookAt;
+
+    [Header("Audio")]
     [SerializeField] private AudioListener audioListener;
+
+    private void Awake()
+    {
+        // Safety: camera reference can be auto-found
+        if (freeLookCamera == null)
+            freeLookCamera = FindObjectOfType<CinemachineFreeLook>();
+
+        if (audioListener == null)
+            audioListener = Camera.main?.GetComponent<AudioListener>();
+    }
 
     public override void OnNetworkSpawn()
     {
         if (!IsOwner)
+            return;
+
+        SetupLocalCamera();
+    }
+
+    private void SetupLocalCamera()
+    {
+        if (freeLookCamera == null)
         {
-            // Disable camera for non-owners
-            fpsCamera.enabled = false;
-            audioListener.enabled = false;
+            Debug.LogError("No CinemachineFreeLook found in scene");
             return;
         }
 
-        // Enable camera for local player
-        fpsCamera.enabled = true;
-        audioListener.enabled = true;
+        // 🔑 Bind camera to THIS local player
+        freeLookCamera.Follow = playerLookAt;
+        freeLookCamera.LookAt = playerLookAt;
 
-        // Optional: lock cursor
+        // Ensure only one AudioListener is active
+        if (audioListener != null)
+            audioListener.enabled = true;
+
+        // Optional cursor control (third-person friendly)
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
     }

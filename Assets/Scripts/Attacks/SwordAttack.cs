@@ -1,9 +1,10 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 using System.Collections.Generic;
+using Unity.Netcode;
 using System.Collections;
 
-public class SwordAttack : MonoBehaviour
+public class SwordAttack : NetworkBehaviour
 {
     [Header("Components")]
     [SerializeField] private Animator animator;
@@ -42,6 +43,7 @@ public class SwordAttack : MonoBehaviour
 
     void Update()
     {
+        if (!IsOwner) return;
         // Check if the button was just performed (clicked)
         if (attackAction.action.WasPressedThisFrame() && !isAttacking)
         {
