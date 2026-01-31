@@ -144,6 +144,8 @@ public class NetworkSpawner : NetworkBehaviour
         }
 
         SceneManager.LoadScene(timeoutSceneName);
+        // NetworkManager.Singleton.SceneManager.LoadScene(timeoutSceneName);
+        
     }
 
     private int GetConnectedPlayers()
