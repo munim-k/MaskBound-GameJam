@@ -1,5 +1,6 @@
 using UnityEngine;
 using Unity.Netcode;
+using MaskBound.Player;
 
 /// <summary>
 /// Manages mask ownership and swapping for a single player.
@@ -94,7 +95,7 @@ public class PlayerMaskManager : NetworkBehaviour
         RequestMaskServerRpc(requestedMask);
     }
 
-    [Rpc(SendTo.Server, RequireOwnership = false)]
+    [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
     private void RequestMaskServerRpc(MaskType requestedMask, RpcParams rpcParams = default)
     {
         if (MaskAuthority.Instance == null)
@@ -163,7 +164,7 @@ public class PlayerMaskManager : NetworkBehaviour
         pendingRequester = null;
     }
 
-    [Rpc(SendTo.Server, RequireOwnership = false)]
+    [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
     private void AcceptRequestServerRpc(ulong requesterClientId, RpcParams rpcParams = default)
     {
         if (MaskAuthority.Instance == null)
@@ -183,6 +184,7 @@ public class PlayerMaskManager : NetworkBehaviour
     /// <summary>
     /// Called when mask NetworkVariable changes.
     /// Updates HUD for owner only.
+    /// Resets corruption timer per GDD: "Mask timer resets when switching masks"
     /// </summary>
     private void HandleMaskChanged(MaskType oldMask, MaskType newMask)
     {
@@ -191,6 +193,18 @@ public class PlayerMaskManager : NetworkBehaviour
         if (IsOwner)
         {
             UpdateHUD(newMask);
+            
+            // GDD: Reset corruption timer on mask swap
+            MaskCorruption corruption = GetComponent<MaskCorruption>();
+            if (corruption != null)
+            {
+                corruption.ResetCorruption();
+                Debug.Log("[PlayerMaskManager] Corruption timer reset due to mask swap");
+            }
+            else
+            {
+                Debug.LogWarning("[PlayerMaskManager] MaskCorruption component not found!");
+            }
         }
     }
 
