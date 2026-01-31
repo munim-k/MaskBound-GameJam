@@ -1,0 +1,93 @@
+using UnityEngine;
+using Unity.Netcode;
+using UnityEngine.UI;
+using TMPro; // Standard for text in modern Unity
+
+public class PlayerHealth : NetworkBehaviour
+{
+    [Header("UI Elements")]
+    [SerializeField] private Slider healthSlider;
+    [SerializeField] private TextMeshProUGUI healthText;
+
+    [Header("Settings")]
+    [SerializeField] private float maxHealth = 100f;
+
+    // NetworkVariable to sync health across all clients
+    public NetworkVariable<float> currentHealth = new NetworkVariable<float>(
+        100f, 
+        NetworkVariableReadPermission.Everyone, 
+        NetworkVariableWritePermission.Server
+    );
+
+    public override void OnNetworkSpawn()
+    {
+        // 1. Find UI first
+        if (IsOwner)
+        {
+            GameObject hud = GameObject.FindWithTag("PlayerHUD");
+            if (hud != null)
+            {
+                healthSlider = hud.GetComponentInChildren<Slider>();
+                healthText = hud.GetComponentInChildren<TextMeshProUGUI>();
+
+                if (healthSlider != null) 
+                {
+                    healthSlider.maxValue = maxHealth;
+                    healthSlider.minValue = 0;
+                }
+            }
+        }
+        
+        // 2. Server sets initial value BEFORE UI update
+        if (IsServer)
+        {
+            currentHealth.Value = maxHealth;
+        }
+
+        // 3. Subscribe to future changes
+        currentHealth.OnValueChanged += UpdateUI;
+
+        // 4. Force immediate update with current value
+        UpdateUI(0, currentHealth.Value);
+    }
+
+    public override void OnNetworkDespawn()
+    {
+        currentHealth.OnValueChanged -= UpdateUI;
+    }
+
+    public void TakeDamage(float amount)
+    {
+        if (!IsServer) return; // Only server calculates damage
+
+        currentHealth.Value -= amount;
+
+        if (currentHealth.Value <= 0)
+        {
+            currentHealth.Value = 0;
+            Die();
+        }
+    }
+
+    private void UpdateUI(float previousValue, float newValue)
+    {
+        // ONLY update the HUD if this script belongs to the local player
+        if (!IsOwner) return; 
+
+        if (healthSlider != null)
+        {
+            healthSlider.value = newValue;
+        }
+
+        if (healthText != null)
+        {
+            healthText.text = $"{Mathf.CeilToInt(newValue)} / {maxHealth}";
+        }
+    }
+
+    private void Die()
+    {
+        Debug.Log($"{gameObject.name} has died.");
+        // Logic for respawning or disabling player goes here
+    }
+}

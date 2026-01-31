@@ -5,6 +5,7 @@ TagManager:
   serializedVersion: 3
   tags:
   - CinemachineTarget
+  - PlayerHUD
   layers:
   - Default
   - TransparentFX
@@ -14,7 +15,7 @@ TagManager:
   - UI
   - FaceLayer
   - Enemy
-  - 
+  - Player
   - 
   - 
   - 
