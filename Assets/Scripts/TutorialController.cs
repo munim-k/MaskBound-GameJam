@@ -1,8 +1,9 @@
 using UnityEngine;
 using TMPro;
 using UnityEngine.SceneManagement; // Or UnityEngine.UI if using legacy text
+using Unity.Netcode;
 
-public class TutorialController : MonoBehaviour
+public class TutorialController : NetworkBehaviour
 {
     public TextMeshProUGUI instructionText; // Drag your UI text here
     public GameObject tutorialPanel;        // Drag your background panel here
@@ -88,9 +89,18 @@ public class TutorialController : MonoBehaviour
                 instructionText.text = "Elemental masks deal more damage to their corresponding element. Fire Mask for Ice enemies, Lightning mask for metal enemies, Earth mask for rock enemies.\n Press enter to continue";
                 break;
             case 6:
-                instructionText.text = "Good luck!";
                 Cursor.visible = true;
                 Cursor.lockState = CursorLockMode.None;
+
+                if (NetworkManager.Singleton == null)
+                    return;
+
+                // If we are Host or Server, this will kick all clients
+                if (NetworkManager.Singleton.IsHost || NetworkManager.Singleton.IsServer)
+                {
+                    NetworkManager.Singleton.Shutdown();
+                }
+                instructionText.text = "Good luck!";
                 Invoke("CloseTutorial", 3f); // Close after 2 seconds
                 break;
         }
@@ -105,8 +115,30 @@ public class TutorialController : MonoBehaviour
 
     void CloseTutorial()
     {
-        // tutorialPanel.SetActive(false);
-        this.enabled = false; // Turn off this script to save performance
-        SceneManager.LoadScene("MainMenu"); // Load main game scene
+        // 1. Get the special "DontDestroyOnLoad" scene
+        GameObject[] ddolObjects = GetDontDestroyOnLoadObjects();
+
+        // 2. Destroy everything in it
+        foreach (GameObject obj in ddolObjects)
+        {
+            // Optional: Check for specific tags or names if you want to keep things like SteamManager
+            Destroy(obj);
+        }
+
+        // 3. Optional: Explicitly trigger Garbage Collection for a fresh start
+        Resources.UnloadUnusedAssets();
+
+        // 4. Load the next scene
+        SceneManager.LoadScene("MainMenu");
+    }
+
+    // Helper to grab objects in the hidden DDOL scene
+    private GameObject[] GetDontDestroyOnLoadObjects()
+    {
+        GameObject temp = new GameObject();
+        Object.DontDestroyOnLoad(temp);
+        Scene ddolScene = temp.scene;
+        Object.Destroy(temp);
+        return ddolScene.GetRootGameObjects();
     }
 }
