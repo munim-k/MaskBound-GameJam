@@ -33,6 +33,7 @@ public class FaceEngine : NetworkBehaviour
     [SerializeField] private GameObject uploadPanel;
     [SerializeField] private GameObject mainPanel;
     [SerializeField] private RawImage previewImage;
+    [SerializeField] private LoadingManager loadingManager;
 
     [SerializeField] private Button openPanelButton;
     [SerializeField] private Button closePanelButton;
@@ -78,6 +79,11 @@ public class FaceEngine : NetworkBehaviour
         confirmButton.onClick.AddListener(ConfirmImage);
     }
 
+    private void Start()
+    {
+        loadingManager = Object.FindFirstObjectByType<LoadingManager>();
+    }
+
     /* =========================
        CONFIRM
        ========================= */
@@ -85,6 +91,7 @@ public class FaceEngine : NetworkBehaviour
     private void ConfirmImage()
     {
         uploadPanel.SetActive(false);
+        loadingManager.Show();
 
         if (testMode)
         {
@@ -138,6 +145,8 @@ public class FaceEngine : NetworkBehaviour
             Debug.LogError("Invalid pipeline response");
             yield break;
         }
+
+        loadingManager.Hide();
 
         // 🔑 Send URL + owner info
         SendFaceUrlsServerRpc(response.objUrl, response.textureUrl);
