@@ -145,13 +145,33 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 6430790114209021793, guid: 29e00087f4178244fa2525f154080310, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 3198231893375869623}
   m_SourcePrefab: {fileID: 100100000, guid: 29e00087f4178244fa2525f154080310, type: 3}
 --- !u!4 &1211330342338346658 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 6239543668534567794, guid: 29e00087f4178244fa2525f154080310, type: 3}
   m_PrefabInstance: {fileID: 5069027258223615440}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &2262510045951779505 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 6430790114209021793, guid: 29e00087f4178244fa2525f154080310, type: 3}
+  m_PrefabInstance: {fileID: 5069027258223615440}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &3198231893375869623
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2262510045951779505}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6d1ab0f3331268148aee934fa284bacb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ScorpionAttackAudio
 --- !u!95 &4292669701346725432 stripped
 Animator:
   m_CorrespondingSourceObject: {fileID: 9064177281784239080, guid: 29e00087f4178244fa2525f154080310, type: 3}

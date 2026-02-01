@@ -91,7 +91,7 @@ public class EnemySpawner : NetworkBehaviour
             var tag = go.tag;
 
             if (tag == "Orc") enemytag = EnemyFamily.Orc;
-            else if (tag == "ScorpionMan") enemytag = EnemyFamily.ScorpionMan;
+            else if (tag == "Scorpion") enemytag = EnemyFamily.ScorpionMan;
             else if (tag == "Gargoyle") enemytag = EnemyFamily.Gargoyle;
             else
             {

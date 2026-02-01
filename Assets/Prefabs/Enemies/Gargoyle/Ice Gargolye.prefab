@@ -659,6 +659,7 @@ GameObject:
   - component: {fileID: 2214144873902906812}
   - component: {fileID: 3426850095416049401}
   - component: {fileID: -4708347817513168087}
+  - component: {fileID: 8812044098118704239}
   m_Layer: 7
   m_Name: Ice Gargoyle (Gargolye)
   m_TagString: Gargoyle
@@ -907,6 +908,19 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::MaskBound.Enemy.EnemyClassification
   family: 2
   element: 0
+--- !u!114 &8812044098118704239
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3195158078909120938}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 25aad60917e58c34ea5302ff71422140, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EnemyFamilyReference
+  familyAudioType: 1
 --- !u!1 &3209064173403865235
 GameObject:
   m_ObjectHideFlags: 0
