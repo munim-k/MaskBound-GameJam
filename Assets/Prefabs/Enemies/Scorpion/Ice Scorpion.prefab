@@ -20,6 +20,14 @@ PrefabInstance:
       propertyPath: _animator
       value: 
       objectReference: {fileID: 1741898798780961695}
+    - target: {fileID: 6275703749200110545, guid: cce8416cc5073c6469b4a0772f9572f3, type: 3}
+      propertyPath: m_AnchorMax.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6275703749200110545, guid: cce8416cc5073c6469b4a0772f9572f3, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 6283325616703980607, guid: cce8416cc5073c6469b4a0772f9572f3, type: 3}
       propertyPath: m_Animator
       value: 
