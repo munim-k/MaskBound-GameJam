@@ -78,6 +78,8 @@ public class TutorialController : MonoBehaviour
                 break;
             case 5:
                 instructionText.text = "Good luck!";
+                Cursor.visible = true;
+        Cursor.lockState = CursorLockMode.None;
                 Invoke("CloseTutorial", 3f); // Close after 2 seconds
                 break;
         }

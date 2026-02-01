@@ -31,7 +31,7 @@ namespace MaskBound.UI
         private struct ClientSelectionData : INetworkSerializable, System.IEquatable<ClientSelectionData>
         {
             public ulong ClientId;
-            public int SelectedAffinity; // 0=None, 1=Orc, 2=ScorpionMan, 3=Gargoyle
+            public int SelectedAffinity; // -1=None, 0=Orc, 1=ScorpionMan, 2=Gargoyle (raw enum values)
 
             public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
             {
@@ -91,7 +91,7 @@ namespace MaskBound.UI
                 clientSelections.Add(new ClientSelectionData
                 {
                     ClientId = client.Key,
-                    SelectedAffinity = 0 // None
+                    SelectedAffinity = -1 // None (-1 to avoid conflict with Orc=0)
                 });
             }
 
@@ -122,7 +122,7 @@ namespace MaskBound.UI
                 if (confirmedClientId == clientId) continue; // Skip self
                 
                 var confirmedSelection = GetClientSelection(confirmedClientId);
-                if (confirmedSelection == requestedAffinity)
+                if (confirmedSelection == (int)requestedAffinity) // Cast enum to int for comparison
                 {
                     isConfirmedByOther = true;
                     break;
@@ -142,7 +142,7 @@ namespace MaskBound.UI
                 if (data.ClientId != clientId && data.SelectedAffinity == affinity)
                 {
                     // Unselect the other player
-                    data.SelectedAffinity = 0; // None
+                    data.SelectedAffinity = -1; // None
                     clientSelections[i] = data;
                     Debug.Log($"[CharacterSelection] Client {data.ClientId}'s unconfirmed selection of {requestedAffinity} was overridden by Client {clientId}");
                 }
@@ -181,11 +181,11 @@ namespace MaskBound.UI
         {
             ulong clientId = rpcParams.Receive.SenderClientId;
 
-            // Validate client has made a selection
+            // Validate client has made a selection (-1 means None)
             bool hasSelection = false;
             foreach (var data in clientSelections)
             {
-                if (data.ClientId == clientId && data.SelectedAffinity != 0)
+                if (data.ClientId == clientId && data.SelectedAffinity >= 0) // >= 0 means a valid enum value
                 {
                     hasSelection = true;
                     break;
@@ -226,9 +226,9 @@ namespace MaskBound.UI
             foreach (ulong confirmedClientId in confirmedClients)
             {
                 var selection = GetClientSelection(confirmedClientId);
-                if (selection != 0)
+                if (selection >= 0) // Valid enum value (not -1/None)
                 {
-                    confirmedAffinities.Add(selection);
+                    confirmedAffinities.Add((EnemyFamily)selection);
                 }
             }
 
@@ -245,7 +245,7 @@ namespace MaskBound.UI
             foreach (ulong confirmedClientId in confirmedClients)
             {
                 var selection = GetClientSelection(confirmedClientId);
-                if (selection == affinity)
+                if (selection == (int)affinity) // Cast enum to int for comparison
                 {
                     return true;
                 }
@@ -256,16 +256,16 @@ namespace MaskBound.UI
         /// <summary>
         /// Get current selection for a specific client
         /// </summary>
-        public EnemyFamily GetClientSelection(ulong clientId)
+        public int GetClientSelection(ulong clientId)
         {
             foreach (var data in clientSelections)
             {
                 if (data.ClientId == clientId)
                 {
-                    return (EnemyFamily)data.SelectedAffinity;
+                    return data.SelectedAffinity;
                 }
             }
-            return 0; // None
+            return -1; // None
         }
 
         /// <summary>
@@ -290,7 +290,7 @@ namespace MaskBound.UI
                 bool hasValidSelection = false;
                 foreach (var data in clientSelections)
                 {
-                    if (data.ClientId == clientId && data.SelectedAffinity != 0)
+                    if (data.ClientId == clientId && data.SelectedAffinity >= 0) // Valid enum value
                     {
                         hasValidSelection = true;
                         break;
@@ -314,7 +314,7 @@ namespace MaskBound.UI
 
             foreach (var data in clientSelections)
             {
-                if (data.SelectedAffinity != 0)
+                if (data.SelectedAffinity >= 0) // Valid enum value
                 {
                     MaskBound.Player.PlayerAffinity.SelectedAffinities[data.ClientId] = (EnemyFamily)data.SelectedAffinity;
                     Debug.Log($"[CharacterSelection] Stored selection for client {data.ClientId}: {(EnemyFamily)data.SelectedAffinity}");
