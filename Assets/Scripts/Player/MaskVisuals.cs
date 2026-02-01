@@ -45,33 +45,26 @@ namespace MaskBound.Player
                 return;
             }
 
-            // Subscribe to mask changes - need to access the private NetworkVariable via reflection or add a public method
-            // For now, we'll poll in Update() - see Update() method below
+            // Subscribe to mask changes via public event
+            maskManager.OnMaskChanged += OnMaskChanged;
             
             // Spawn initial mask if player already has one
             if (maskManager.CurrentMask != 0)
             {
+                Debug.Log($"[MaskVisuals] Initial mask: {maskManager.CurrentMask} for Client {OwnerClientId}");
                 SpawnMask(maskManager.CurrentMask);
             }
 
-            Debug.Log($"[MaskVisuals] Initialized for Client {OwnerClientId}");
-        }
-
-        private MaskType lastKnownMask = 0;
-
-        private void Update()
-        {
-            // Poll for mask changes since we can't subscribe to private NetworkVariable
-            if (maskManager != null && maskManager.CurrentMask != lastKnownMask)
-            {
-                OnMaskChanged(lastKnownMask, maskManager.CurrentMask);
-                lastKnownMask = maskManager.CurrentMask;
-            }
+            Debug.Log($"[MaskVisuals] ✅ Subscribed to mask changes for Client {OwnerClientId}");
         }
 
         public override void OnNetworkDespawn()
         {
-            // No need to unsubscribe since we're polling
+            // Unsubscribe from event
+            if (maskManager != null)
+            {
+                maskManager.OnMaskChanged -= OnMaskChanged;
+            }
         }
 
         /// <summary>
@@ -79,7 +72,7 @@ namespace MaskBound.Player
         /// </summary>
         private void OnMaskChanged(MaskType oldMask, MaskType newMask)
         {
-            Debug.Log($"[MaskVisuals] Mask changed: {oldMask} -> {newMask}");
+            Debug.Log($"[MaskVisuals] 🎭 EVENT RECEIVED: Mask changed {oldMask} -> {newMask} for Client {OwnerClientId}");
 
             // Destroy old mask if it exists
             if (currentMaskInstance != null)

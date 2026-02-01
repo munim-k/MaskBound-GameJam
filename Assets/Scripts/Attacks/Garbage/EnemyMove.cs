@@ -93,7 +93,7 @@ public class EnemyMove : NetworkBehaviour
             Quaternion targetRotation = Quaternion.LookRotation(moveDir);
             transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, rotationSpeed * Time.deltaTime);
             
-            animator.SetBool("isWalking", true);
+            // animator.SetBool("isWalking", true);
 
             PLAYBACK_STATE playbackState;
             walkInstance.getPlaybackState(out playbackState);
@@ -104,7 +104,7 @@ public class EnemyMove : NetworkBehaviour
         }
         else
         {
-            animator.SetBool("isWalking", false);
+            // animator.SetBool("isWalking", false);
             PLAYBACK_STATE playbackState;
             walkInstance.getPlaybackState(out playbackState);
             if (playbackState == PLAYBACK_STATE.PLAYING && GetComponent<EnemyFamilyReference>().familyAudioType != EnemyFamilyReference.FamilyAudioType.Gargoyle)
