@@ -62,6 +62,13 @@ public class EnemySpawner : NetworkBehaviour
 
     public int CurrentArenaIndex { get; private set; } = -1;
 
+    private bool isArenaStarted = false;
+    private float minValue = 0f;
+    private float maxValue = 3f;
+    private float increaseRate = 0.05f;
+    private float decreaseRate = 0.33f;
+    private float currentValue = 0f;
+
     #region Inspector structs
 
     private void Start()
@@ -247,6 +254,7 @@ public class EnemySpawner : NetworkBehaviour
             yield return new WaitForSeconds(arena.arenaIntroDelay);
 
         OnArenaStartedServer?.Invoke(arenaIndex);
+        isArenaStarted = true;
 
         if (arena.steps == null) yield break;
 
@@ -280,6 +288,7 @@ public class EnemySpawner : NetworkBehaviour
             yield return null;
         print("All enemies defeated in arena " + arenaIndex);
         OnArenaCompletedServer?.Invoke(arenaIndex);
+        isArenaStarted = false;
         for(int i=0;i<doors.Length;i++)
         {
             doors[i].OpenDoor(arenaIndex);
@@ -389,6 +398,22 @@ public class EnemySpawner : NetworkBehaviour
             {
                 OnEnemyDespawnedServer?.Invoke(TrackedNetId);
             }
+        }
+    }
+
+    private void Update()
+    {
+        if(isArenaStarted)
+        {
+            currentValue += increaseRate * Time.deltaTime;
+            currentValue = Mathf.Clamp(currentValue, minValue, maxValue);
+            AudioManager.instance.SetMusicParameter("MusicDifficulty", currentValue);
+        }
+        else
+        {
+            currentValue -= decreaseRate * Time.deltaTime;
+            currentValue = Mathf.Clamp(currentValue, minValue, maxValue);
+            AudioManager.instance.SetMusicParameter("MusicDifficulty", currentValue);
         }
     }
 }

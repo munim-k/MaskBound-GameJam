@@ -12,6 +12,8 @@ public class DoorOpening : MonoBehaviour
         if (index == ArenaIndex)
         {
             transform.position += new Vector3(0, -10f, 0);
+
+            AudioManager.instance.PlayOneShot(FMODEvents.instance.fogWall, transform.position);
         }
     }
 }
