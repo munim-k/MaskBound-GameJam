@@ -8444,7 +8444,6 @@ GameObject:
   - component: {fileID: 316591025}
   - component: {fileID: 316591024}
   - component: {fileID: 316591023}
-  - component: {fileID: 316591022}
   - component: {fileID: 316591026}
   m_Layer: 0
   m_Name: door (1)
@@ -8468,23 +8467,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1663616935}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!111 &316591022
-Animation:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 316591020}
-  m_Enabled: 1
-  serializedVersion: 4
-  m_Animation: {fileID: 7400000, guid: df4ca6fa5c4f13e4787e13b9339dfacc, type: 2}
-  m_Animations:
-  - {fileID: 7400000, guid: df4ca6fa5c4f13e4787e13b9339dfacc, type: 2}
-  m_WrapMode: 0
-  m_PlayAutomatically: 0
-  m_AnimatePhysics: 1
-  m_UpdateMode: 0
-  m_CullingType: 0
 --- !u!65 &316591023
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -8575,7 +8557,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DoorOpening
   spawner: {fileID: 1779172394}
-  ArenaIndex: 0
+  ArenaIndex: 1
 --- !u!1 &328695863
 GameObject:
   m_ObjectHideFlags: 0
@@ -31978,15 +31960,6 @@ MonoBehaviour:
       spawnPointIndex: 0
       waitUntilAllDeadBeforeNextStep: 0
       debugLog: 0
-    - family: 2
-      element: 2
-      count: 1
-      delayBefore: 0
-      spawnInterval: 5
-      spawnPointMode: 1
-      spawnPointIndex: 0
-      waitUntilAllDeadBeforeNextStep: 0
-      debugLog: 0
   autoStartArenaOnServer: 1
   startArenaIndex: 0
   doors:
@@ -32735,6 +32708,10 @@ PrefabInstance:
     - target: {fileID: 2846214739365209388, guid: 8ba0aa1883f7d474388ab3cd69698362, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6036754057275265736, guid: 8ba0aa1883f7d474388ab3cd69698362, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: -76.1001
       objectReference: {fileID: 0}
     - target: {fileID: 9136943503018567981, guid: 8ba0aa1883f7d474388ab3cd69698362, type: 3}
       propertyPath: GlobalObjectIdHash
@@ -35600,7 +35577,6 @@ GameObject:
   - component: {fileID: 2114980669}
   - component: {fileID: 2114980668}
   - component: {fileID: 2114980667}
-  - component: {fileID: 2114980670}
   - component: {fileID: 2114980671}
   m_Layer: 0
   m_Name: door
@@ -35701,23 +35677,6 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2114980665}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
---- !u!111 &2114980670
-Animation:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2114980665}
-  m_Enabled: 1
-  serializedVersion: 4
-  m_Animation: {fileID: 7400000, guid: df4ca6fa5c4f13e4787e13b9339dfacc, type: 2}
-  m_Animations:
-  - {fileID: 7400000, guid: df4ca6fa5c4f13e4787e13b9339dfacc, type: 2}
-  m_WrapMode: 0
-  m_PlayAutomatically: 0
-  m_AnimatePhysics: 1
-  m_UpdateMode: 0
-  m_CullingType: 0
 --- !u!114 &2114980671
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -35731,7 +35690,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DoorOpening
   spawner: {fileID: 1779172394}
-  ArenaIndex: 1
+  ArenaIndex: 0
 --- !u!1 &2141633502
 GameObject:
   m_ObjectHideFlags: 0

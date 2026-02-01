@@ -232,7 +232,7 @@ public class EnemySpawner : NetworkBehaviour
 
         netObj.Spawn(true);
         RegisterAlive(netObj);
-        
+
 
         return netObj;
     }
@@ -320,20 +320,23 @@ public class EnemySpawner : NetworkBehaviour
         _aliveEnemyNetIds.Add(enemyObj.NetworkObjectId);
 
         // ✅ Ensure the enemy has a reporter to notify despawn on server
-        if (enemyObj.GetComponent<EnemyLifetimeReporter>() == null)
+        var reporter = enemyObj.GetComponent<EnemyLifetimeReporter>();
+        if (reporter == null)
         {
-            enemyObj.gameObject.AddComponent<EnemyLifetimeReporter>();
+            reporter = enemyObj.gameObject.AddComponent<EnemyLifetimeReporter>();
         }
+        
+        reporter.TrackedNetId = enemyObj.NetworkObjectId;
 
         OnAliveCountChangedServer?.Invoke(CurrentArenaIndex, _aliveEnemyNetIds.Count);
     }
 
     // ✅ Called when any enemy NetworkObject despawns on the server
-    private void OnEnemyDespawnedServer(NetworkObject netObj)
+    private void OnEnemyDespawnedServer(ulong netId)
     {
         if (!IsServer) return;
 
-        _aliveEnemyNetIds.Remove(netObj.NetworkObjectId);
+        _aliveEnemyNetIds.Remove(netId);
         OnAliveCountChangedServer?.Invoke(CurrentArenaIndex, _aliveEnemyNetIds.Count);
     }
 
@@ -359,7 +362,7 @@ public class EnemySpawner : NetworkBehaviour
         // Mapping: 0=None/Basic, 1=Ice, 2=Metal, 3=Rock
         switch (element)
         {
-            case EnemySubElement.None:  return targetArray[0]; 
+            case EnemySubElement.None:  return targetArray[0];
             case EnemySubElement.Ice:   return targetArray[1];
             case EnemySubElement.Metal: return targetArray[2];
             case EnemySubElement.Rock:  return targetArray[3];
@@ -371,14 +374,21 @@ public class EnemySpawner : NetworkBehaviour
     /// Add this to enemy prefabs (or EnemySpawner adds it at runtime).
     /// It fires when the NetworkObject is despawned, which is the correct NGO lifecycle hook.
     /// </summary>
-    public class EnemyLifetimeReporter : NetworkBehaviour
+    public class EnemyLifetimeReporter : MonoBehaviour
     {
-        public static event Action<NetworkObject> OnEnemyDespawnedServer;
+        public static event Action<ulong> OnEnemyDespawnedServer;
+        public ulong TrackedNetId;
 
-        public override void OnNetworkDespawn()
+        // OnDestroy is called when the GameObject is destroyed (Despawn calls Destroy)
+        private void OnDestroy()
         {
-            if (!IsServer) return;
-            OnEnemyDespawnedServer?.Invoke(NetworkObject);
+            // Verify we are on server is implicit if we only add this on server, 
+            // but checking IsServer here is hard since component is being destroyed.
+            // We rely on the fact that we only added this component on the server in RegisterAlive.
+            if (TrackedNetId != 0)
+            {
+                OnEnemyDespawnedServer?.Invoke(TrackedNetId);
+            }
         }
     }
 }
