@@ -374,9 +374,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyAttack
   ShowTopMostFoldoutHeaderGroup: 1
-  damage: 10
+  damage: 30
   attackCooldown: 1
-  attackRange: 0.83
+  attackRange: 3.32
   impactDelay: 0.7
   animationDuration: 1.5
   playerLayer:
