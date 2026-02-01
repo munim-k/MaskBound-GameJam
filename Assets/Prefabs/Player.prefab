@@ -55,6 +55,7 @@ GameObject:
   - component: {fileID: 4932299218167377670}
   - component: {fileID: 7567000134666486270}
   - component: {fileID: 3734938955393871191}
+  - component: {fileID: 6713848427973578940}
   m_Layer: 8
   m_Name: Player
   m_TagString: Player
@@ -530,6 +531,19 @@ MonoBehaviour:
   maskLocalPosition: {x: -123, y: 1.3891, z: 0.1785}
   maskLocalRotation: {x: 0, y: 0, z: 0}
   maskLocalScale: 0.2
+--- !u!114 &6713848427973578940
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1033921092754182687}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 290cd34eff2cd21418b8c51d96fcbbdc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::faceLocation
+  faceParentObjectField: {fileID: 3227621370651661169}
 --- !u!1 &3227621370651661169
 GameObject:
   m_ObjectHideFlags: 0
