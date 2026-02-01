@@ -70,13 +70,6 @@ public class FluidThirdPersonController_OldInput : NetworkBehaviour
     [Header("Audio")]
     private EventInstance slideEvent;
 
-    [Header("Footstep Audio")]
-    public float minStepRate = 1f;
-    public float maxStepRate = 4f;
-
-    private float footstepTimer = 0f;
-
-
     // runtime
     private CharacterController _cc;
 
@@ -268,7 +261,6 @@ public class FluidThirdPersonController_OldInput : NetworkBehaviour
         Vector3 vertical = new Vector3(0f, _verticalVelocity, 0f) * Time.deltaTime;
 
         _cc.Move(horizontal + vertical);
-        HandleFootsteps();
     }
 
     // --------------------
@@ -409,22 +401,6 @@ public class FluidThirdPersonController_OldInput : NetworkBehaviour
         _targetPitch = ClampPitch(_targetPitch, bottomClamp, topClamp);
 
         cameraTarget.rotation = Quaternion.Euler(_targetPitch, _targetYaw, 0f);
-    }
-
-    private void HandleFootsteps()
-    {
-        if (!_grounded || _speed < 0.1f) return;  // only play when moving on ground
-
-        // Map speed to frequency
-        float frequency = Mathf.Lerp(minStepRate, maxStepRate, _speed / sprintSpeed);  
-        float interval = 1f / frequency;
-
-        footstepTimer += Time.deltaTime;
-        if (footstepTimer >= interval)
-        {
-            footstepTimer = 0f;
-            AudioManager.instance.PlayOneShot(FMODEvents.instance.playerFootsteps, transform.position);
-        }
     }
 
 
