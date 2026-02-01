@@ -530,8 +530,8 @@ GameObject:
   m_Component:
   - component: {fileID: 330585546}
   - component: {fileID: 330585545}
-  - component: {fileID: 330585544}
   - component: {fileID: 330585547}
+  - component: {fileID: 330585548}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -539,14 +539,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!81 &330585544
-AudioListener:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 330585543}
-  m_Enabled: 1
 --- !u!20 &330585545
 Camera:
   m_ObjectHideFlags: 0
@@ -657,6 +649,20 @@ MonoBehaviour:
     m_VarianceClampScale: 0.9
     m_ContrastAdaptiveSharpening: 0
   m_Version: 2
+--- !u!114 &330585548
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 330585543}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 86c6556701af9e04380698b89f691b6e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: FMODUnity::FMODUnity.StudioListener
+  nonRigidbodyVelocity: 0
+  attenuationObject: {fileID: 0}
 --- !u!1 &410087039
 GameObject:
   m_ObjectHideFlags: 0
@@ -814,6 +820,39 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1524628627}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &488759343
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 488759344}
+  m_Layer: 0
+  m_Name: Managers
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &488759344
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 488759343}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -0, y: 0, z: -0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 1581691386}
+  - {fileID: 829545358}
+  m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &632096791
 GameObject:
@@ -1278,6 +1317,246 @@ Transform:
   - {fileID: 131297004}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &829545357
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 829545358}
+  - component: {fileID: 829545359}
+  m_Layer: 0
+  m_Name: FMOD events
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &829545358
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 829545357}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 488759344}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &829545359
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 829545357}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 14e85f13a1e9cce4aa820cacb90d7ac2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FMODEvents
+  <ambience>k__BackingField:
+    Guid:
+      Data1: -212366709
+      Data2: 1116488324
+      Data3: -777528415
+      Data4: -2055407778
+    Path: event:/Ambience/Ambience
+  <music>k__BackingField:
+    Guid:
+      Data1: -1520172822
+      Data2: 1307417776
+      Data3: -1109123910
+      Data4: -203867682
+    Path: event:/Music/Music
+  <playerWalk>k__BackingField:
+    Guid:
+      Data1: 1997725188
+      Data2: 1244665589
+      Data3: -2134141021
+      Data4: -538560134
+    Path: event:/SFX/Player/Walk
+  <playerRun>k__BackingField:
+    Guid:
+      Data1: 992210950
+      Data2: 1190883248
+      Data3: -1263341142
+      Data4: -1987698014
+    Path: event:/SFX/Player/Run
+  <maskSwap>k__BackingField:
+    Guid:
+      Data1: -334663195
+      Data2: 1172049365
+      Data3: 1865914301
+      Data4: 849864083
+    Path: event:/SFX/Player/Mask Swap
+  <playerJump>k__BackingField:
+    Guid:
+      Data1: -1662605439
+      Data2: 1218110615
+      Data3: -1284356733
+      Data4: -1868814271
+    Path: event:/SFX/Player/Jump
+  <playerLand>k__BackingField:
+    Guid:
+      Data1: 447589816
+      Data2: 1278796658
+      Data3: 173244581
+      Data4: 1773777941
+    Path: event:/SFX/Player/Land
+  <playerLowHealth>k__BackingField:
+    Guid:
+      Data1: -1921474789
+      Data2: 1102209481
+      Data3: -1468319823
+      Data4: 1209665748
+    Path: event:/SFX/Player/Low Health
+  <playerSlide>k__BackingField:
+    Guid:
+      Data1: -1101321114
+      Data2: 1096224592
+      Data3: -1368470860
+      Data4: -1563175947
+    Path: event:/SFX/Player/Slide
+  <playerDeath>k__BackingField:
+    Guid:
+      Data1: 924890613
+      Data2: 1193145806
+      Data3: -1762713932
+      Data4: -1453538949
+    Path: event:/SFX/Player/Death
+  <trollWalk>k__BackingField:
+    Guid:
+      Data1: 2096175520
+      Data2: 1153213024
+      Data3: -1717666937
+      Data4: -1063131212
+    Path: event:/SFX/Troll/Walk
+  <trollRange>k__BackingField:
+    Guid:
+      Data1: -1856374887
+      Data2: 1287734392
+      Data3: 728470172
+      Data4: 640649526
+    Path: event:/SFX/Troll/Range
+  <trollMelee>k__BackingField:
+    Guid:
+      Data1: 2067146857
+      Data2: 1287157200
+      Data3: -1357548906
+      Data4: -1739902086
+    Path: event:/SFX/Troll/Melee
+  <trollDeath>k__BackingField:
+    Guid:
+      Data1: 961053169
+      Data2: 1188856210
+      Data3: 2073535408
+      Data4: -1873855926
+    Path: event:/SFX/Troll/Death
+  <gargoyleFly>k__BackingField:
+    Guid:
+      Data1: -432714159
+      Data2: 1101445256
+      Data3: -1793086027
+      Data4: -1551386890
+    Path: event:/SFX/Gargoyle/Flying
+  <gargoyleScreech>k__BackingField:
+    Guid:
+      Data1: 1509827905
+      Data2: 1329474882
+      Data3: 946837410
+      Data4: 489648895
+    Path: event:/SFX/Gargoyle/Range
+  <gargoyleMelee>k__BackingField:
+    Guid:
+      Data1: -137836353
+      Data2: 1276893550
+      Data3: 1580100012
+      Data4: 2075177259
+    Path: event:/SFX/Gargoyle/Melee
+  <gargoyleDeath>k__BackingField:
+    Guid:
+      Data1: -729791575
+      Data2: 1317862022
+      Data3: -541545325
+      Data4: -747711009
+    Path: event:/SFX/Gargoyle/Death
+  <scorpionWalk>k__BackingField:
+    Guid:
+      Data1: -511210834
+      Data2: 1185630594
+      Data3: -263093871
+      Data4: -598574653
+    Path: event:/SFX/Scorpion/Walk
+  <scorpionMelee>k__BackingField:
+    Guid:
+      Data1: 1828831574
+      Data2: 1138710123
+      Data3: 1801993118
+      Data4: 1317364234
+    Path: event:/SFX/Scorpion/Melee
+  <scorpionRange>k__BackingField:
+    Guid:
+      Data1: -1940803055
+      Data2: 1258868448
+      Data3: -1074910839
+      Data4: -179722615
+    Path: event:/SFX/Scorpion/Range
+  <scorpionDeath>k__BackingField:
+    Guid:
+      Data1: 1822892792
+      Data2: 1172349404
+      Data3: 1841152396
+      Data4: -2101968630
+    Path: event:/SFX/Scorpion/Death
+  <uiClick>k__BackingField:
+    Guid:
+      Data1: -1059002616
+      Data2: 1084044055
+      Data3: 1413523641
+      Data4: -2076426378
+    Path: event:/UI/UI Click
+  <requestReceive>k__BackingField:
+    Guid:
+      Data1: 1907640107
+      Data2: 1093274354
+      Data3: -226185337
+      Data4: -2128502716
+    Path: event:/UI/Ping
+  <weakHit>k__BackingField:
+    Guid:
+      Data1: 284657872
+      Data2: 1158721685
+      Data3: 478643364
+      Data4: 1958887625
+    Path: event:/SFX/Melee/Body Hit Weak
+  <strongHit>k__BackingField:
+    Guid:
+      Data1: -736830652
+      Data2: 1121194166
+      Data3: -688510029
+      Data4: -231585040
+    Path: event:/SFX/Melee/Body Hit Strong
+  <swordSwing>k__BackingField:
+    Guid:
+      Data1: 630480778
+      Data2: 1236529994
+      Data3: 220846001
+      Data4: -2056629604
+    Path: event:/SFX/Melee/Sword Swing
+  <fogWall>k__BackingField:
+    Guid:
+      Data1: -819209135
+      Data2: 1278160348
+      Data3: 1215752865
+      Data4: -310979447
+    Path: event:/SFX/Fog Wall
 --- !u!1 &832575517
 GameObject:
   m_ObjectHideFlags: 0
@@ -2097,6 +2376,37 @@ Transform:
   m_Children:
   - {fileID: 466997776}
   m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1581691385
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1581691386}
+  m_Layer: 0
+  m_Name: Audio Manager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1581691386
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1581691385}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 488759344}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1728152915
 GameObject:
@@ -3046,3 +3356,4 @@ SceneRoots:
   - {fileID: 1473582325}
   - {fileID: 852405791}
   - {fileID: 1944635421}
+  - {fileID: 488759344}
