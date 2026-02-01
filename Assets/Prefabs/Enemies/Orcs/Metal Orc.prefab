@@ -269,6 +269,7 @@ GameObject:
   - component: {fileID: 1181316657248711113}
   - component: {fileID: 3220513622782200045}
   - component: {fileID: -7468593799930120229}
+  - component: {fileID: 7555371286722193606}
   m_Layer: 7
   m_Name: Metal Orc (Orc)
   m_TagString: Orc
@@ -534,6 +535,19 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::MaskBound.Enemy.EnemyClassification
   family: 0
   element: 1
+--- !u!114 &7555371286722193606
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4656215805415666946}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 25aad60917e58c34ea5302ff71422140, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EnemyFamilyReference
+  familyAudioType: 0
 --- !u!1 &6824045380334905575
 GameObject:
   m_ObjectHideFlags: 0
@@ -731,13 +745,33 @@ PrefabInstance:
     - {fileID: 7935760004416225434, guid: ed87063768d12e045a53525d0efdcae6, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 2008642528519655600, guid: ed87063768d12e045a53525d0efdcae6, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1205364525953633758}
   m_SourcePrefab: {fileID: 100100000, guid: ed87063768d12e045a53525d0efdcae6, type: 3}
 --- !u!95 &3170925844060412557 stripped
 Animator:
   m_CorrespondingSourceObject: {fileID: 6954907757693144940, guid: ed87063768d12e045a53525d0efdcae6, type: 3}
   m_PrefabInstance: {fileID: 5514006285336122849}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &6297596043631723857 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 2008642528519655600, guid: ed87063768d12e045a53525d0efdcae6, type: 3}
+  m_PrefabInstance: {fileID: 5514006285336122849}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1205364525953633758
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6297596043631723857}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bc002573cb2beed4caf145a806da6db3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::OrcAttackAudio
 --- !u!4 &7106205042548181035 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 3322495807815917002, guid: ed87063768d12e045a53525d0efdcae6, type: 3}
