@@ -17,6 +17,9 @@ public class EnemyMove : NetworkBehaviour
 
     private Vector3 velocity;
     private float nextTargetUpdateTime;
+    
+    [Header("Animation")]
+    [SerializeField] private Animator animator;
 
     public override void OnNetworkSpawn()
     {
@@ -77,6 +80,12 @@ public class EnemyMove : NetworkBehaviour
 
             Quaternion targetRotation = Quaternion.LookRotation(moveDir);
             transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, rotationSpeed * Time.deltaTime);
+            
+            animator.SetBool("isWalking", true);
+        }
+        else
+        {
+            animator.SetBool("isWalking", false);
         }
     }
 

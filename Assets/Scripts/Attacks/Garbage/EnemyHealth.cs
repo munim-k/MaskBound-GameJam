@@ -6,6 +6,8 @@ public class EnemyHealth : NetworkBehaviour
 {
     [SerializeField] private Slider healthBar;
     [SerializeField] private float maxHealth = 100f;
+    
+    [SerializeField] Animator animator;
 
     public NetworkVariable<float> currentHealth = new NetworkVariable<float>(
         0,
@@ -58,10 +60,11 @@ public class EnemyHealth : NetworkBehaviour
     private void ApplyDamage(float damage)
     {
         currentHealth.Value -= damage;
-        if (currentHealth.Value <= 0) 
+        if (currentHealth.Value <= 0)
         {
+            Debug.Log("health now 0. triggering animation");
             // Use NetworkObject.Despawn for networked objects instead of Destroy
-            GetComponent<NetworkObject>().Despawn();
+            animator.SetTrigger("death");
         }
     }
 

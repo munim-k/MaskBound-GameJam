@@ -222,7 +222,7 @@ public class FaceEngine : NetworkBehaviour
         {
             Debug.LogError("Pipeline upload failed: " + req.error);
             yield break;
-        }
+        }   
 
         PipelineResponse response =
             JsonUtility.FromJson<PipelineResponse>(req.downloadHandler.text);

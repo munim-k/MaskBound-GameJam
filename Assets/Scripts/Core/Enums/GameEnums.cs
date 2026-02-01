@@ -88,7 +88,7 @@ namespace MaskBound.Core.Enums
     public enum EnemyType
     {
         // Troll Family
-        Troll,
+        Orc,
         
         // Scorpion Man Family
         ScorpionMan,
