@@ -58,7 +58,7 @@ public class EnemySpawner : NetworkBehaviour
 
     [Header("Runtime")] [SerializeField] private bool autoStartArenaOnServer = false;
     [SerializeField] private int startArenaIndex = 0;
-
+    [SerializeField] private int timeBetweenArenas=10;
     // Alive tracking (server authority)
     private readonly HashSet<ulong> _aliveEnemyNetIds = new HashSet<ulong>();
     private int _roundRobinIndex = 0;
