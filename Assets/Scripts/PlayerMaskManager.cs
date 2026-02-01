@@ -72,9 +72,18 @@ public class PlayerMaskManager : NetworkBehaviour
     /// </summary>
     public void RequestMask(MaskType requestedMask)
     {
+        Debug.Log($"[PlayerMaskManager] 📞 RequestMask CALLED: Requested={requestedMask}, IsOwner={IsOwner}, currentMask={currentMask.Value}");
+        
         if (!IsOwner)
         {
             Debug.LogWarning("[PlayerMaskManager] RequestMask called on non-owner!");
+            return;
+        }
+
+        // Validation: Must have a mask (check NetworkVariable, not local bool)
+        if (currentMask.Value == 0)
+        {
+            Debug.LogWarning("[PlayerMaskManager] Cannot request mask - you don't have one yet!");
             return;
         }
 
@@ -85,13 +94,7 @@ public class PlayerMaskManager : NetworkBehaviour
             return;
         }
 
-        if (!hasMask)
-        {
-            Debug.LogWarning("[PlayerMaskManager] Cannot request mask - you don't have one yet!");
-            return;
-        }
-
-        Debug.Log($"[PlayerMaskManager] Requesting swap: {currentMask.Value} -> {requestedMask}");
+        Debug.Log($"[PlayerMaskManager] ✅ SENDING RPC: {currentMask.Value} -> {requestedMask}");
         RequestMaskServerRpc(requestedMask);
     }
 
@@ -182,16 +185,50 @@ public class PlayerMaskManager : NetworkBehaviour
         MaskAuthority.Instance.SwapMasks(requesterClientId, targetClientId);
     }
 
-    // ===== CALLBACKS =====
+    // ===== PUBLIC API =====
 
     /// <summary>
-    /// Called when mask NetworkVariable changes.
-    /// Updates HUD for owner only.
-    /// Resets corruption timer per GDD: "Mask timer resets when switching masks"
+    /// Event fired when this player's mask changes (on all clients)
+    /// Subscribe to this to react to mask changes
+    /// </summary>
+    public event System.Action<MaskType, MaskType> OnMaskChanged;
+
+    /// <summary>
+    /// Returns whether this player currently has a mask assigned.
+    /// </summary>
+    public bool HasMask()
+    {
+        return hasMask;
+    }
+
+    /// <summary>
+    /// Server-only: Directly set this player's mask.
+    /// Used by MaskAuthority during swaps.
+    /// </summary>
+    /// <param name="newMask">The mask to assign</param>
+    public void SetMask(MaskType newMask)
+    {
+        if (!IsServer)
+        {
+            Debug.LogError("[PlayerMaskManager] SetMask can only be called on server!");
+            return;
+        }
+
+        Debug.Log($"[PlayerMaskManager] SERVER SETTING MASK: {currentMask.Value} -> {newMask} for client {OwnerClientId}");
+        currentMask.Value = newMask;
+        hasMask = true;
+        Debug.Log($"[PlayerMaskManager] Server set mask to {newMask} for client {OwnerClientId}");
+    }
+
+    /// <summary>
+    /// Internal: Invoke the mask changed event when NetworkVariable changes
     /// </summary>
     private void HandleMaskChanged(MaskType oldMask, MaskType newMask)
     {
         Debug.Log($"[PlayerMaskManager] Mask changed: {oldMask} -> {newMask} (Owner: {IsOwner})");
+        
+        // Invoke public event for external listeners (MaskVisuals, etc.)
+        OnMaskChanged?.Invoke(oldMask, newMask);
         
         if (IsOwner)
         {
@@ -227,33 +264,5 @@ public class PlayerMaskManager : NetworkBehaviour
         {
             Debug.LogWarning("[PlayerMaskManager] HUDMaskDisplay.Instance is null!");
         }
-    }
-
-    // ===== PUBLIC API =====
-
-    /// <summary>
-    /// Returns whether this player currently has a mask assigned.
-    /// </summary>
-    public bool HasMask()
-    {
-        return hasMask;
-    }
-
-    /// <summary>
-    /// Server-only: Directly set this player's mask.
-    /// Used by MaskAuthority during swaps.
-    /// </summary>
-    /// <param name="newMask">The mask to assign</param>
-    public void SetMask(MaskType newMask)
-    {
-        if (!IsServer)
-        {
-            Debug.LogError("[PlayerMaskManager] SetMask can only be called on server!");
-            return;
-        }
-
-        currentMask.Value = newMask;
-        hasMask = true;
-        Debug.Log($"[PlayerMaskManager] Server set mask to {newMask} for client {OwnerClientId}");
     }
 }
