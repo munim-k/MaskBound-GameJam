@@ -122,7 +122,8 @@ public class PlayerMaskManager : NetworkBehaviour
     [Rpc(SendTo.Owner)]
     public void ReceiveMaskRequestClientRpc(ulong requesterClientId, MaskType requestedMask)
     {
-        AudioManager.instance.PlayOneShot(FMODEvents.instance.requestReceive, transform.position);
+        if(IsOwner)
+            AudioManager.instance.PlayOneShot(FMODEvents.instance.requestReceive, transform.position);
         
         Debug.Log($"[PlayerMaskManager] Received swap request from client {requesterClientId} for {requestedMask}");
         

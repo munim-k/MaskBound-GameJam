@@ -62,16 +62,20 @@ public class EnemyHealth : NetworkBehaviour
         currentHealth.Value -= damage;
 
         if(isCritical){
-            AudioManager.instance.PlayOneShot(FMODEvents.instance.strongHit, transform.position);
+            if(IsOwner)
+                AudioManager.instance.PlayOneShot(FMODEvents.instance.strongHit, transform.position);
         } else {
-            AudioManager.instance.PlayOneShot(FMODEvents.instance.weakHit, transform.position);
+            if(IsOwner)
+                AudioManager.instance.PlayOneShot(FMODEvents.instance.weakHit, transform.position);
         }
 
         if (currentHealth.Value <= 0)
         {
             Debug.Log("health now 0. triggering animation");
             animator.SetTrigger("death");
-            AudioManager.instance.PlayOneShot(GetComponent<EnemyFamilyReference>().GetDeathReference(), transform.position);
+
+            if(IsOwner)
+                AudioManager.instance.PlayOneShot(GetComponent<EnemyFamilyReference>().GetDeathReference(), transform.position);
         }
     }
 

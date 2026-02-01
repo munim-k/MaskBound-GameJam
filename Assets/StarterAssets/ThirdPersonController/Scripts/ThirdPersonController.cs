@@ -128,10 +128,13 @@ public class FluidThirdPersonController_OldInput : NetworkBehaviour
         }
 
         _jumpsRemaining = maxJumps;
+        
+        if(IsOwner)
+        {
+            slideEvent = AudioManager.instance.CreateInstance(FMODEvents.instance.playerSlide);
+            _landAudioPlayed = true;
+        }
 
-        slideEvent = AudioManager.instance.CreateInstance(FMODEvents.instance.playerSlide);
-
-        _landAudioPlayed = true;
     }
 
     private void Update()
@@ -208,8 +211,10 @@ public class FluidThirdPersonController_OldInput : NetworkBehaviour
         {
             if(!_landAudioPlayed)
             {
-                AudioManager.instance.PlayOneShot(FMODEvents.instance.playerLand, transform.position);
-                _landAudioPlayed = true;
+                if(IsOwner){
+                    AudioManager.instance.PlayOneShot(FMODEvents.instance.playerLand, transform.position);
+                    _landAudioPlayed = true;
+                }
             }
 
             _lastGroundedTime = Time.time;
@@ -297,8 +302,11 @@ public class FluidThirdPersonController_OldInput : NetworkBehaviour
         if (_isSliding) StopSlide();
 
         if (animator != null) animator.SetTrigger(_animJump);
-        AudioManager.instance.PlayOneShot(FMODEvents.instance.playerJump, transform.position);
-        _landAudioPlayed = false;
+
+        if(IsOwner){
+            AudioManager.instance.PlayOneShot(FMODEvents.instance.playerJump, transform.position);
+            _landAudioPlayed = false;
+        }
         _verticalVelocity = Mathf.Sqrt(jumpHeight * -2f * gravity);
     }
 
@@ -344,9 +352,9 @@ public class FluidThirdPersonController_OldInput : NetworkBehaviour
 
         PLAYBACK_STATE slideState;
         slideEvent.getPlaybackState(out slideState);
-        if (slideState != PLAYBACK_STATE.PLAYING)
+        if (slideState != PLAYBACK_STATE.PLAYING && slideEvent.isValid())
             slideEvent.start();
-        else{
+        else if(slideEvent.isValid()){
             slideEvent.stop(FMOD.Studio.STOP_MODE.IMMEDIATE); // restart
             slideEvent.start();
         }
@@ -366,7 +374,8 @@ public class FluidThirdPersonController_OldInput : NetworkBehaviour
     private void StopSlide()
     {
         _isSliding = false;
-        slideEvent.stop(FMOD.Studio.STOP_MODE.ALLOWFADEOUT);
+        if(slideEvent.isValid())
+            slideEvent.stop(FMOD.Studio.STOP_MODE.ALLOWFADEOUT);
 
         _cc.height = _originalHeight;
         _cc.center = _originalCenter;

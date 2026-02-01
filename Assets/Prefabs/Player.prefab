@@ -56,6 +56,8 @@ GameObject:
   - component: {fileID: 7567000134666486270}
   - component: {fileID: 3734938955393871191}
   - component: {fileID: 6713848427973578940}
+  - component: {fileID: 306251201692638608}
+  - component: {fileID: 393596428813142269}
   m_Layer: 8
   m_Name: Player
   m_TagString: Player
@@ -93,7 +95,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.NetworkObject
-  GlobalObjectIdHash: 1631707342
+  GlobalObjectIdHash: 452422550
   InScenePlacedSourceGlobalObjectIdHash: 0
   DeferredDespawnTick: 0
   Ownership: 1
@@ -543,6 +545,33 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::faceLocation
   faceParentObjectField: {fileID: 3227621370651661169}
   maskParentObjectField: {fileID: 3941089759831414751}
+--- !u!114 &306251201692638608
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1033921092754182687}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 86c6556701af9e04380698b89f691b6e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: FMODUnity::FMODUnity.StudioListener
+  nonRigidbodyVelocity: 0
+  attenuationObject: {fileID: 1033921092754182687}
+--- !u!114 &393596428813142269
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1033921092754182687}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: be0ad2d9830f7d14d9fcc20bc72459a4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AudioNetwork
+  ShowTopMostFoldoutHeaderGroup: 1
 --- !u!1 &3227621370651661169
 GameObject:
   m_ObjectHideFlags: 0

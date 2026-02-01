@@ -1401,6 +1401,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 393596428813142269, guid: 2bb80c7ff9805f94a8f5645269ae46fc, type: 3}
+      propertyPath: m_Enabled
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 1033921092754182687, guid: 2bb80c7ff9805f94a8f5645269ae46fc, type: 3}
       propertyPath: m_Name
       value: Player
@@ -1890,6 +1894,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 003c6b580c0aa7f43b29d575bdf50dbc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: '::'
+  ShowTopMostFoldoutHeaderGroup: 1
   instructionText: {fileID: 549201670}
   tutorialPanel: {fileID: 0}
 --- !u!114 &1899617273
@@ -2296,7 +2301,6 @@ GameObject:
   m_Component:
   - component: {fileID: 2147281236}
   - component: {fileID: 2147281235}
-  - component: {fileID: 2147281234}
   - component: {fileID: 2147281237}
   - component: {fileID: 2147281238}
   m_Layer: 0
@@ -2306,14 +2310,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!81 &2147281234
-AudioListener:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2147281233}
-  m_Enabled: 1
 --- !u!20 &2147281235
 Camera:
   m_ObjectHideFlags: 0

@@ -26,12 +26,14 @@ public class EnemyMove : NetworkBehaviour
 
     public override void OnNetworkSpawn()
     {
+        Debug.Log("EnemyMove OnNetworkSpawn");
         controller = GetComponent<CharacterController>();
 
         // Initialize FMOD walk event
-        walkInstance = AudioManager.instance.CreateInstance(GetComponent<EnemyFamilyReference>().GetWalkReference());
+        if(IsOwner)
+            walkInstance = AudioManager.instance.CreateInstance(GetComponent<EnemyFamilyReference>().GetWalkReference());
 
-        if (GetComponent<EnemyFamilyReference>().familyAudioType == EnemyFamilyReference.FamilyAudioType.Gargoyle)
+        if (GetComponent<EnemyFamilyReference>().familyAudioType == EnemyFamilyReference.FamilyAudioType.Gargoyle && walkInstance.isValid())
         {
             walkInstance.start();
         }
@@ -97,7 +99,7 @@ public class EnemyMove : NetworkBehaviour
 
             PLAYBACK_STATE playbackState;
             walkInstance.getPlaybackState(out playbackState);
-            if (playbackState != PLAYBACK_STATE.PLAYING)
+            if (playbackState != PLAYBACK_STATE.PLAYING && walkInstance.isValid())
             {
                 walkInstance.start();
             }
@@ -107,7 +109,7 @@ public class EnemyMove : NetworkBehaviour
             // animator.SetBool("isWalking", false);
             PLAYBACK_STATE playbackState;
             walkInstance.getPlaybackState(out playbackState);
-            if (playbackState == PLAYBACK_STATE.PLAYING && GetComponent<EnemyFamilyReference>().familyAudioType != EnemyFamilyReference.FamilyAudioType.Gargoyle)
+            if (playbackState == PLAYBACK_STATE.PLAYING && GetComponent<EnemyFamilyReference>().familyAudioType != EnemyFamilyReference.FamilyAudioType.Gargoyle && walkInstance.isValid())
             {
                 walkInstance.stop(FMOD.Studio.STOP_MODE.ALLOWFADEOUT);
             }
