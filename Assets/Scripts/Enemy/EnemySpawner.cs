@@ -55,7 +55,7 @@ public class EnemySpawner : NetworkBehaviour
     private readonly HashSet<ulong> _aliveEnemyNetIds = new HashSet<ulong>();
     private int _roundRobinIndex = 0;
     private Coroutine _runRoutine;
-
+    public DoorOpening[] doors;
     public event Action<int> OnArenaStartedServer; // arenaIndex
     public event Action<int> OnArenaCompletedServer; // arenaIndex
     public event Action<int, int> OnAliveCountChangedServer; // arenaIndex, alive
@@ -278,8 +278,12 @@ public class EnemySpawner : NetworkBehaviour
 
         while (_aliveEnemyNetIds.Count > 0)
             yield return null;
-
+        print("All enemies defeated in arena " + arenaIndex);
         OnArenaCompletedServer?.Invoke(arenaIndex);
+        for(int i=0;i<doors.Length;i++)
+        {
+            doors[i].OpenDoor(arenaIndex);
+        }
         _runRoutine = null;
     }
 
