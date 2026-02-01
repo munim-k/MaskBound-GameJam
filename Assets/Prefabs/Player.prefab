@@ -544,7 +544,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::faceLocation
   faceParentObjectField: {fileID: 3227621370651661169}
-  maskParentObjectField: {fileID: 0}
+  maskParentObjectField: {fileID: 3941089759831414751}
 --- !u!1 &3227621370651661169
 GameObject:
   m_ObjectHideFlags: 0
