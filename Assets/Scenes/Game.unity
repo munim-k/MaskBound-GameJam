@@ -11895,6 +11895,79 @@ RectTransform:
   m_AnchoredPosition: {x: 2.5, y: 0}
   m_SizeDelta: {x: -5, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!1001 &727846983
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 5751712423567113751, guid: edd19a3055a68b046a688b7b99760b5a, type: 3}
+      propertyPath: GlobalObjectIdHash
+      value: 296841561
+      objectReference: {fileID: 0}
+    - target: {fileID: 5751712423567113751, guid: edd19a3055a68b046a688b7b99760b5a, type: 3}
+      propertyPath: InScenePlacedSourceGlobalObjectIdHash
+      value: 1892756586
+      objectReference: {fileID: 0}
+    - target: {fileID: 7200252745416020212, guid: edd19a3055a68b046a688b7b99760b5a, type: 3}
+      propertyPath: m_Name
+      value: Metal ScorpionMan (((((Scorpion)))))
+      objectReference: {fileID: 0}
+    - target: {fileID: 8246697871872092949, guid: edd19a3055a68b046a688b7b99760b5a, type: 3}
+      propertyPath: m_AnchorMax.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8246697871872092949, guid: edd19a3055a68b046a688b7b99760b5a, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8735602165494193983, guid: edd19a3055a68b046a688b7b99760b5a, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: -2.23127
+      objectReference: {fileID: 0}
+    - target: {fileID: 8735602165494193983, guid: edd19a3055a68b046a688b7b99760b5a, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8735602165494193983, guid: edd19a3055a68b046a688b7b99760b5a, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: -0.28434
+      objectReference: {fileID: 0}
+    - target: {fileID: 8735602165494193983, guid: edd19a3055a68b046a688b7b99760b5a, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8735602165494193983, guid: edd19a3055a68b046a688b7b99760b5a, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8735602165494193983, guid: edd19a3055a68b046a688b7b99760b5a, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8735602165494193983, guid: edd19a3055a68b046a688b7b99760b5a, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8735602165494193983, guid: edd19a3055a68b046a688b7b99760b5a, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8735602165494193983, guid: edd19a3055a68b046a688b7b99760b5a, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8735602165494193983, guid: edd19a3055a68b046a688b7b99760b5a, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: edd19a3055a68b046a688b7b99760b5a, type: 3}
 --- !u!1 &740117750
 GameObject:
   m_ObjectHideFlags: 0
@@ -31691,11 +31764,17 @@ MonoBehaviour:
   - {fileID: 3195158078909120938, guid: 78d8dbb842c53c4448234d4f7ed00f11, type: 3}
   - {fileID: 4687989918010321013, guid: 73d7566983d216c4a8e8e9eb3c1fe6bb, type: 3}
   - {fileID: 7994189637336163461, guid: 2b8a05c1143b2a647b74f23d9e5121ac, type: 3}
+  - {fileID: 7200252745416020212, guid: cff1d87e6db670a44ab73c4a52522492, type: 3}
+  - {fileID: 7200252745416020212, guid: edd19a3055a68b046a688b7b99760b5a, type: 3}
+  - {fileID: 7200252745416020212, guid: a9017344c14afff4cb2abadf63d481a2, type: 3}
   Orcs:
   - {fileID: 2480258066634101113, guid: 939cec33061919646bc781e27ef8d7e7, type: 3}
   - {fileID: 4656215805415666946, guid: 4a181e3323f291e4d9d2ed24594306af, type: 3}
   - {fileID: 3989739258048915713, guid: 1d3dce731d1e04545b5f256dc5141157, type: 3}
-  ScorpionMen: []
+  ScorpionMen:
+  - {fileID: 7200252745416020212, guid: cff1d87e6db670a44ab73c4a52522492, type: 3}
+  - {fileID: 7200252745416020212, guid: edd19a3055a68b046a688b7b99760b5a, type: 3}
+  - {fileID: 7200252745416020212, guid: a9017344c14afff4cb2abadf63d481a2, type: 3}
   Gargoyles:
   - {fileID: 3195158078909120938, guid: 78d8dbb842c53c4448234d4f7ed00f11, type: 3}
   - {fileID: 4687989918010321013, guid: 73d7566983d216c4a8e8e9eb3c1fe6bb, type: 3}
@@ -35535,3 +35614,4 @@ SceneRoots:
   - {fileID: 1144077320}
   - {fileID: 262634835}
   - {fileID: 1779172393}
+  - {fileID: 727846983}

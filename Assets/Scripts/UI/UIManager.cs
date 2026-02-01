@@ -7,7 +7,8 @@ public class UIManager : NetworkBehaviour
     [Header("Panels")]
     [SerializeField] private GameObject gameStartPanel;
     [SerializeField] private GameObject uploadPicturePanel;
-    [SerializeField] private GameObject enterGamePanel;   // ✅ NEW (added, not replacing)
+    [SerializeField] private GameObject characterSelectionPanel;  // Character selection phase
+    [SerializeField] private GameObject enterGamePanel;   // Final ready screen
 
     [Header("Force Start (Host Only)")]
     [SerializeField] private GameObject forceStartButton;
@@ -34,6 +35,9 @@ public class UIManager : NetworkBehaviour
 
         if (startGameButton != null)
             startGameButton.SetActive(false);
+            
+        if (characterSelectionPanel != null)
+            characterSelectionPanel.SetActive(false);
             
         if (enterGamePanel != null)
             enterGamePanel.SetActive(false);
@@ -139,18 +143,49 @@ public class UIManager : NetworkBehaviour
 
         if (confirmedClients.Count == NetworkManager.Singleton.ConnectedClients.Count)
         {
-            ShowEnterGamePanelClientRpc();
+            // All faces ready - show character selection instead of enter game
+            ShowCharacterSelectionPanelClientRpc();
         }
+    }
+
+    [ClientRpc]
+    private void ShowCharacterSelectionPanelClientRpc()
+    {
+        uploadPicturePanel?.SetActive(false);
+        characterSelectionPanel?.SetActive(true);
+        
+        // Initialize clients on server (now that all have uploaded faces and connected)
+        if (IsServer)
+        {
+            var selectionManager = FindObjectOfType<MaskBound.UI.CharacterSelectionManager>();
+            selectionManager?.InitializeClients();
+        }
+        
+        // Notify the CharacterSelectionPanel to initialize
+        var panel = characterSelectionPanel?.GetComponent<MaskBound.UI.CharacterSelectionPanel>();
+        panel?.Show();
+        
+        Debug.Log("[UIManager] Showing character selection panel");
+    }
+
+    /// <summary>
+    /// Called by CharacterSelectionManager when all players confirm
+    /// </summary>
+    public void OnAllCharactersConfirmed()
+    {
+        ShowEnterGamePanelClientRpc();
     }
 
     [ClientRpc]
     private void ShowEnterGamePanelClientRpc()
     {
-        uploadPicturePanel?.SetActive(false);
+        characterSelectionPanel?.SetActive(false);
         enterGamePanel?.SetActive(true);
 
         if (startGameButton != null)
             startGameButton.SetActive(IsServer);
+            
+        Debug.Log("[UIManager] All characters confirmed - showing enter game panel");
     }
 
     // =========================
@@ -176,6 +211,7 @@ public class UIManager : NetworkBehaviour
     {
         gameStartPanel?.SetActive(true);
         uploadPicturePanel?.SetActive(false);
+        characterSelectionPanel?.SetActive(false);
         enterGamePanel?.SetActive(false);
     }
 
@@ -183,6 +219,7 @@ public class UIManager : NetworkBehaviour
     {
         gameStartPanel?.SetActive(false);
         uploadPicturePanel?.SetActive(true);
+        characterSelectionPanel?.SetActive(false);
         enterGamePanel?.SetActive(false);
     }
 }
