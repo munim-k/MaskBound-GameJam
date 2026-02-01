@@ -157,15 +157,30 @@ public class FaceEngine : NetworkBehaviour
     {
         Debug.Log($"[FaceEngine] Attaching face for client {clientId} to player {player.name}");
 
-        // Parent face to player
-        face.transform.SetParent(player.transform);
+        // Get the faceLocation component from the player
+        faceLocation faceLocationComp = player.GetComponent<faceLocation>();
+        if (faceLocationComp == null)
+        {
+            Debug.LogError($"[FaceEngine] Player {player.name} is missing faceLocation component!");
+            return;
+        }
+
+        GameObject faceParent = faceLocationComp.FaceParentObject;
+        if (faceParent == null)
+        {
+            Debug.LogError($"[FaceEngine] faceParentObject is null on player {player.name}!");
+            return;
+        }
+
+        // Parent face to the designated face parent object
+        face.transform.SetParent(faceParent.transform);
         
-        // Set position and scale from Inspector values
-        face.transform.localPosition = faceLocalPosition;
+        // Set position and scale - zero offset, 0.001 scale
+        face.transform.localPosition = Vector3.zero;
         face.transform.localRotation = Quaternion.identity;
-        face.transform.localScale = Vector3.one * faceLocalScale;
+        face.transform.localScale = Vector3.one * 0.001f;
         
-        Debug.Log($"[FaceEngine] ✅ Face attached! LocalPos={face.transform.localPosition}");
+        Debug.Log($"[FaceEngine] ✅ Face attached to {faceParent.name}! LocalPos={face.transform.localPosition}, LocalScale={face.transform.localScale}");
     }
 
 
