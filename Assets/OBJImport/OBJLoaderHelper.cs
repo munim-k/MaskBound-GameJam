@@ -77,7 +77,28 @@ namespace Dummiesman
 
         public static Material CreateNullMaterial()
         {
-            return new Material(Shader.Find("Standard (Specular setup)"));
+            // Try originally requested shader
+            var shader = Shader.Find("Standard (Specular setup)");
+
+            // Fallback 1: URP Lit (Common in URP projects)
+            if (shader == null) shader = Shader.Find("Universal Render Pipeline/Lit");
+
+            // Fallback 2: URP Unlit
+            if (shader == null) shader = Shader.Find("Universal Render Pipeline/Unlit");
+
+            // Fallback 3: Standard (Built-in)
+            if (shader == null) shader = Shader.Find("Standard");
+
+            // Fallback 4: Diffuse (Legacy)
+            if (shader == null) shader = Shader.Find("Diffuse");
+
+            if (shader == null)
+            {
+                Debug.LogError("[OBJLoaderHelper] Critical: Could not find any suitable shader for material creation!");
+                return null; // Will likely cause a crash downstream but logs the error first
+            }
+
+            return new Material(shader);
         }
 
         public static Vector3 VectorFromStrArray(string[] cmps)
