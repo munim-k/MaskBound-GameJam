@@ -1,6 +1,7 @@
 using UnityEngine;
 using Unity.Netcode;
 using FMOD.Studio;
+using MaskBound.Enemy;
 
 [RequireComponent(typeof(CharacterController))]
 public class EnemyMove : NetworkBehaviour
@@ -28,9 +29,9 @@ public class EnemyMove : NetworkBehaviour
         controller = GetComponent<CharacterController>();
 
         // Initialize FMOD walk event
-        walkInstance = AudioManager.instance.CreateInstance(GetComponent<EnemyType>().GetWalkReference());
+        walkInstance = AudioManager.instance.CreateInstance(GetComponent<EnemyFamilyReference>().GetWalkReference());
 
-        if (GetComponent<EnemyType>().enemyType == EnemyType.Type.Gargoyle)
+        if (GetComponent<EnemyFamilyReference>().familyAudioType == EnemyFamilyReference.FamilyAudioType.Gargoyle)
         {
             walkInstance.start();
         }
@@ -106,7 +107,7 @@ public class EnemyMove : NetworkBehaviour
             animator.SetBool("isWalking", false);
             PLAYBACK_STATE playbackState;
             walkInstance.getPlaybackState(out playbackState);
-            if (playbackState == PLAYBACK_STATE.PLAYING && GetComponent<EnemyType>().enemyType != EnemyType.Type.Gargoyle)
+            if (playbackState == PLAYBACK_STATE.PLAYING && GetComponent<EnemyFamilyReference>().familyAudioType != EnemyFamilyReference.FamilyAudioType.Gargoyle)
             {
                 walkInstance.stop(FMOD.Studio.STOP_MODE.ALLOWFADEOUT);
             }

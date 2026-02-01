@@ -727,7 +727,8 @@ PrefabInstance:
       propertyPath: m_Name
       value: Ice_Orc
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 7935760004416225434, guid: 9964b0700b4eaa2448730cefd5e9289e, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents: []
