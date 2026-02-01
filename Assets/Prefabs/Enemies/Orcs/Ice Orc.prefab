@@ -1641,6 +1641,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 2008642528519655600, guid: 9964b0700b4eaa2448730cefd5e9289e, type: 3}
       insertIndex: -1
       addedObject: {fileID: 74265305041600055}
+    - targetCorrespondingSourceObject: {fileID: 2008642528519655600, guid: 9964b0700b4eaa2448730cefd5e9289e, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 5862407516207476398}
   m_SourcePrefab: {fileID: 100100000, guid: 9964b0700b4eaa2448730cefd5e9289e, type: 3}
 --- !u!4 &623632753069391119 stripped
 Transform:
@@ -1664,6 +1667,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bc002573cb2beed4caf145a806da6db3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::OrcAttackAudio
+--- !u!114 &5862407516207476398
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4421504896579170421}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 445ddae2cf6a48b280704d589b671bb9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EnemyAnimationRelay
 --- !u!95 &5060002246520008617 stripped
 Animator:
   m_CorrespondingSourceObject: {fileID: 6954907757693144940, guid: 9964b0700b4eaa2448730cefd5e9289e, type: 3}
