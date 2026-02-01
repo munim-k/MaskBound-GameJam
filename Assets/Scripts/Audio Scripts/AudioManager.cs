@@ -42,15 +42,15 @@ public class AudioManager : MonoBehaviour
         eventEmitters = new List<StudioEventEmitter>();
 
         masterBus = RuntimeManager.GetBus("bus:/");
-        musicBus = RuntimeManager.GetBus("bus:/Music");
-        ambienceBus = RuntimeManager.GetBus("bus:/Ambience");
-        sfxBus = RuntimeManager.GetBus("bus:/SFX");
+        musicBus = RuntimeManager.GetBus("bus:/Music Bus");
+        ambienceBus = RuntimeManager.GetBus("bus:/Ambience Bus");
+        sfxBus = RuntimeManager.GetBus("bus:/SFX Bus");
     }
 
     private void Start()
     {
-        // InitializeAmbience(FMODEvents.instance.ambience);
-        // InitializeMusic(FMODEvents.instance.music);
+        InitializeAmbience(FMODEvents.instance.ambience);
+        InitializeMusic(FMODEvents.instance.music);
     }
 
     private void Update()
