@@ -65,6 +65,7 @@ public class EnemyHealth : NetworkBehaviour
             Debug.Log("health now 0. triggering animation");
             // Use NetworkObject.Despawn for networked objects instead of Destroy
             animator.SetTrigger("death");
+            AudioManager.instance.PlayOneShot(GetComponent<EnemyType>().GetDeathReference(), transform.position);
         }
     }
 

@@ -119,6 +119,8 @@ public class PlayerMaskManager : NetworkBehaviour
     [Rpc(SendTo.Owner)]
     public void ReceiveMaskRequestClientRpc(ulong requesterClientId, MaskType requestedMask)
     {
+        AudioManager.instance.PlayOneShot(FMODEvents.instance.requestReceive, transform.position);
+        
         Debug.Log($"[PlayerMaskManager] Received swap request from client {requesterClientId} for {requestedMask}");
         
         // Validation: Still own the requested mask?
@@ -193,6 +195,8 @@ public class PlayerMaskManager : NetworkBehaviour
         if (IsOwner)
         {
             UpdateHUD(newMask);
+
+            AudioManager.instance.PlayOneShot(FMODEvents.instance.maskSwap, transform.position);
             
             // GDD: Reset corruption timer on mask swap
             MaskCorruption corruption = GetComponent<MaskCorruption>();

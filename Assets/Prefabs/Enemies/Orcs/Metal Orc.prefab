@@ -433,6 +433,7 @@ GameObject:
   - component: {fileID: 4834812144073434533}
   - component: {fileID: 1181316657248711113}
   - component: {fileID: 3220513622782200045}
+  - component: {fileID: 2271503967917628968}
   m_Layer: 7
   m_Name: Metal Orc
   m_TagString: Orc
@@ -684,6 +685,19 @@ MonoBehaviour:
       Synchronize: 1
       ParameterType: 9
   AnimatorParametersExpanded: 0
+--- !u!114 &2271503967917628968
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4656215805415666946}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6ff9210b0b89d15468662ec6909bbf9b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EnemyTyepe
+  enemyType: 0
 --- !u!1 &6824045380334905575
 GameObject:
   m_ObjectHideFlags: 0
@@ -1049,6 +1063,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 7d48de28d6a4eb341a3fe2540c66da1c, type: 3}
       insertIndex: -1
       addedObject: {fileID: 6838019042710032512}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 7d48de28d6a4eb341a3fe2540c66da1c, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 4858349475744345150}
   m_SourcePrefab: {fileID: 100100000, guid: 7d48de28d6a4eb341a3fe2540c66da1c, type: 3}
 --- !u!4 &202213535266244950 stripped
 Transform:
@@ -1346,6 +1363,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 445ddae2cf6a48b280704d589b671bb9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyAnimationRelay
+--- !u!114 &4858349475744345150
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5381574555056090786}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bc002573cb2beed4caf145a806da6db3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::OrcAttackAudio
 --- !u!4 &5479324955367625425 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 748760126868275490, guid: 7d48de28d6a4eb341a3fe2540c66da1c, type: 3}

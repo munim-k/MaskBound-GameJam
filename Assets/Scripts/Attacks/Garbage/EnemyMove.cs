@@ -1,5 +1,6 @@
 using UnityEngine;
 using Unity.Netcode;
+using FMOD.Studio;
 
 [RequireComponent(typeof(CharacterController))]
 public class EnemyMove : NetworkBehaviour
@@ -20,14 +21,24 @@ public class EnemyMove : NetworkBehaviour
     
     [Header("Animation")]
     [SerializeField] private Animator animator;
+    private EventInstance walkInstance;
 
     public override void OnNetworkSpawn()
     {
         controller = GetComponent<CharacterController>();
+
+        // Initialize FMOD walk event
+        walkInstance = AudioManager.instance.CreateInstance(GetComponent<EnemyType>().GetWalkReference());
+
+        if (GetComponent<EnemyType>().enemyType == EnemyType.Type.Gargoyle)
+        {
+            walkInstance.start();
+        }
     }
 
     // This is the public function your EnemyAttack script was looking for
     public Transform GetPlayerTransform() => player;
+
 
     void Update()
     {
@@ -82,10 +93,23 @@ public class EnemyMove : NetworkBehaviour
             transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, rotationSpeed * Time.deltaTime);
             
             animator.SetBool("isWalking", true);
+
+            PLAYBACK_STATE playbackState;
+            walkInstance.getPlaybackState(out playbackState);
+            if (playbackState != PLAYBACK_STATE.PLAYING)
+            {
+                walkInstance.start();
+            }
         }
         else
         {
             animator.SetBool("isWalking", false);
+            PLAYBACK_STATE playbackState;
+            walkInstance.getPlaybackState(out playbackState);
+            if (playbackState == PLAYBACK_STATE.PLAYING && GetComponent<EnemyType>().enemyType != EnemyType.Type.Gargoyle)
+            {
+                walkInstance.stop(FMOD.Studio.STOP_MODE.ALLOWFADEOUT);
+            }
         }
     }
 

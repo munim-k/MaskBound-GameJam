@@ -2,6 +2,7 @@ using UnityEngine;
 using Unity.Netcode;
 using UnityEngine.UI;
 using TMPro;
+using FMOD.Studio;
 
 public class PlayerHealth : NetworkBehaviour
 {
@@ -19,8 +20,13 @@ public class PlayerHealth : NetworkBehaviour
         NetworkVariableWritePermission.Server
     );
 
+    private EventInstance lowHealthInstance;
+
     public override void OnNetworkSpawn()
     {
+        // Initialize low health FMOD event
+        lowHealthInstance = AudioManager.instance.CreateInstance(FMODEvents.instance.playerLowHealth);
+
         // 1. Find UI first
         if (IsOwner)
         {
@@ -60,11 +66,25 @@ public class PlayerHealth : NetworkBehaviour
     {
         if (!IsServer) return; // Only server calculates damage
 
+        AudioManager.instance.PlayOneShot(FMODEvents.instance.playerHurt, transform.position);
+
         currentHealth.Value -= amount;
 
+        if (currentHealth.Value < maxHealth * 0.2f && currentHealth.Value > 0)
+        {
+            PLAYBACK_STATE playbackState;
+            lowHealthInstance.getPlaybackState(out playbackState);
+            if (playbackState != PLAYBACK_STATE.PLAYING)
+            {
+                lowHealthInstance.start();
+            }
+        }
+            
         if (currentHealth.Value <= 0)
         {
             currentHealth.Value = 0;
+            lowHealthInstance.stop(FMOD.Studio.STOP_MODE.IMMEDIATE);
+            AudioManager.instance.PlayOneShot(FMODEvents.instance.playerDeath, transform.position);
             Die();
         }
     }
