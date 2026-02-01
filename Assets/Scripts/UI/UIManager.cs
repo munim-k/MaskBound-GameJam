@@ -101,7 +101,7 @@ public class UIManager : NetworkBehaviour
     // UPLOAD PHASE (UNCHANGED)
     // =========================
 
-    [ServerRpc(RequireOwnership = false)]
+    [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
     public void StartUploadPhaseServerRpc()
     {
         if (uploadPhaseStarted) return;

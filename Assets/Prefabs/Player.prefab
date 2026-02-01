@@ -148,6 +148,7 @@ GameObject:
   - component: {fileID: 6998603940307985225}
   - component: {fileID: 4802500729274607587}
   - component: {fileID: 4932299218167377670}
+  - component: {fileID: 7406562978660993701}
   m_Layer: 8
   m_Name: Player
   m_TagString: Player
@@ -217,9 +218,6 @@ MonoBehaviour:
   attackDuration: 0.46666667
   attackCooldown: 0.4
   attackDamage: 2
-  hitLayerMask:
-    serializedVersion: 2
-    m_Bits: 128
   attackPoint: {fileID: 5827698352411964473}
   attackRange: 1.1
   enemyLayers:
