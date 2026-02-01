@@ -52,12 +52,12 @@ namespace MaskBound.Player
             {
                 availableAffinities = new List<EnemyFamily>
                 {
-                    EnemyFamily.Troll,
+                    EnemyFamily.Orc,
                     EnemyFamily.ScorpionMan,
                     EnemyFamily.Gargoyle
                 };
                 poolInitialized = true;
-                Debug.Log("[PlayerAffinity] Server initialized affinity pool: [Troll, ScorpionMan, Gargoyle]");
+                Debug.Log("[PlayerAffinity] Server initialized affinity pool: [Orc, ScorpionMan, Gargoyle]");
             }
 
             // Pick random affinity from available pool
@@ -99,7 +99,7 @@ namespace MaskBound.Player
         {
             return affinityTarget switch
             {
-                EnemyFamily.Troll => "Troll Hunter - Bonus damage vs Trolls",
+                EnemyFamily.Orc => "Orc Hunter - Bonus damage vs Orcs",
                 EnemyFamily.ScorpionMan => "Scorpion Slayer - Bonus damage vs Scorpion Men",
                 EnemyFamily.Gargoyle => "Gargoyle Bane - Bonus damage vs Gargoyles",
                 _ => "Unknown Affinity"
