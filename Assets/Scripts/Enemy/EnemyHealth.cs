@@ -60,11 +60,7 @@ namespace MaskBound.Enemy
         /// </summary>
         public void TakeDamage(float damage)
         {
-            TakeDamageServerRpc(damage, new DamageSource 
-            { 
-                DamageType = DamageType.Environmental
-                // AttackerClientId defaults to null
-            });
+            TakeDamageServerRpc(damage);
         }
 
         /// <summary>
@@ -72,7 +68,9 @@ namespace MaskBound.Enemy
         /// </summary>
         public void TakeDamage(float amount, DamageSource source)
         {
-            TakeDamageServerRpc(amount, source);
+            // For now, just pass the amount - server will reconstruct source info
+            // TODO: Add attacker tracking by passing clientId separately if needed
+            TakeDamageServerRpc(amount);
         }
 
         /// <summary>
@@ -80,7 +78,7 @@ namespace MaskBound.Enemy
         /// Server validates and applies damage
         /// </summary>
         [ServerRpc(RequireOwnership = false)]
-        private void TakeDamageServerRpc(float amount, DamageSource source)
+        private void TakeDamageServerRpc(float amount, ServerRpcParams rpcParams = default)
         {
             if (!IsAlive)
             {
@@ -94,12 +92,20 @@ namespace MaskBound.Enemy
             // Apply damage
             currentHealth.Value = Mathf.Max(0, currentHealth.Value - finalDamage);
 
-            Debug.Log($"[EnemyHealth] {gameObject.name} took {finalDamage} damage from client {source.AttackerClientId} ({currentHealth.Value}/{maxHealth})");
+            // Get attacker info from RPC params
+            ulong attackerClientId = rpcParams.Receive.SenderClientId;
+            
+            Debug.Log($"[EnemyHealth] {gameObject.name} took {finalDamage} damage from client {attackerClientId} ({currentHealth.Value}/{maxHealth})");
 
             // Check for death
             if (currentHealth.Value <= 0)
             {
-                Die(source);
+                DamageSource deathSource = new DamageSource
+                {
+                    AttackerClientId = attackerClientId,
+                    DamageType = DamageType.Melee
+                };
+                Die(deathSource);
             }
         }
 
