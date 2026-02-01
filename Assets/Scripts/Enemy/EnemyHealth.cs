@@ -62,8 +62,8 @@ namespace MaskBound.Enemy
         {
             TakeDamageServerRpc(damage, new DamageSource 
             { 
-                DamageType = DamageType.Environmental,
-                AttackerClientId = null
+                DamageType = DamageType.Environmental
+                // AttackerClientId defaults to null
             });
         }
 
