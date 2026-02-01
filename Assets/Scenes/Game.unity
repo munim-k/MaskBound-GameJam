@@ -11341,7 +11341,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Cinemachine::Cinemachine.CinemachineOrbitalTransposer
   m_BindingMode: 5
-  m_FollowOffset: {x: 0, y: -1, z: -3}
+  m_FollowOffset: {x: 0, y: -0.9953929, z: -3.00426}
   m_XDamping: 1
   m_YDamping: 1
   m_ZDamping: 1
@@ -14690,7 +14690,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Cinemachine::Cinemachine.CinemachineOrbitalTransposer
   m_BindingMode: 5
-  m_FollowOffset: {x: 0, y: -1, z: -3}
+  m_FollowOffset: {x: 0, y: -0.9953929, z: -3.00426}
   m_XDamping: 1
   m_YDamping: 1
   m_ZDamping: 1
@@ -31591,7 +31591,7 @@ MonoBehaviour:
     arenaIntroDelay: 0
     steps:
     - family: 2
-      element: 2
+      element: 1
       count: 4
       delayBefore: 0
       spawnInterval: 4
@@ -31600,7 +31600,7 @@ MonoBehaviour:
       waitUntilAllDeadBeforeNextStep: 0
       debugLog: 0
     - family: 0
-      element: 1
+      element: 0
       count: 3
       delayBefore: 0
       spawnInterval: 3
@@ -31609,7 +31609,7 @@ MonoBehaviour:
       waitUntilAllDeadBeforeNextStep: 0
       debugLog: 0
     - family: 2
-      element: 3
+      element: 2
       count: 2
       delayBefore: 0
       spawnInterval: 1
@@ -31621,7 +31621,7 @@ MonoBehaviour:
     arenaIntroDelay: 0
     steps:
     - family: 2
-      element: 3
+      element: 2
       count: 3
       delayBefore: 0
       spawnInterval: 4
@@ -31630,7 +31630,7 @@ MonoBehaviour:
       waitUntilAllDeadBeforeNextStep: 0
       debugLog: 0
     - family: 2
-      element: 3
+      element: 2
       count: 10
       delayBefore: 0
       spawnInterval: 3
@@ -31639,7 +31639,7 @@ MonoBehaviour:
       waitUntilAllDeadBeforeNextStep: 0
       debugLog: 0
     - family: 0
-      element: 1
+      element: 0
       count: 3
       delayBefore: 0
       spawnInterval: 1
@@ -31648,7 +31648,7 @@ MonoBehaviour:
       waitUntilAllDeadBeforeNextStep: 0
       debugLog: 0
     - family: 1
-      element: 1
+      element: 0
       count: 4
       delayBefore: 0
       spawnInterval: 1
@@ -31660,7 +31660,7 @@ MonoBehaviour:
     arenaIntroDelay: 0
     steps:
     - family: 2
-      element: 2
+      element: 1
       count: 5
       delayBefore: 0
       spawnInterval: 3
@@ -31669,7 +31669,7 @@ MonoBehaviour:
       waitUntilAllDeadBeforeNextStep: 0
       debugLog: 0
     - family: 0
-      element: 3
+      element: 2
       count: 4
       delayBefore: 0
       spawnInterval: 5
@@ -31678,7 +31678,7 @@ MonoBehaviour:
       waitUntilAllDeadBeforeNextStep: 0
       debugLog: 0
     - family: 1
-      element: 2
+      element: 1
       count: 9
       delayBefore: 0
       spawnInterval: 2
@@ -31765,7 +31765,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Cinemachine::Cinemachine.CinemachineOrbitalTransposer
   m_BindingMode: 5
-  m_FollowOffset: {x: 0, y: -1, z: -3}
+  m_FollowOffset: {x: 0, y: -0.9953929, z: -3.00426}
   m_XDamping: 1
   m_YDamping: 1
   m_ZDamping: 1
