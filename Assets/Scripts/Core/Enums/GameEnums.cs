@@ -153,9 +153,10 @@ namespace MaskBound.Core.Enums
     public enum EnemyFamily
     {
         /// <summary>
-        /// Troll family (countered by Fire affinity)
+        /// Orc family (countered by Fire affinity)
+        /// GDD calls this "Troll" but using "Orc" for consistency
         /// </summary>
-        Troll,
+        Orc,
         
         /// <summary>
         /// Scorpion Man family (countered by Lightning affinity)

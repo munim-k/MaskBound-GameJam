@@ -703,9 +703,9 @@ GameObject:
   - component: {fileID: 3451411701426460258}
   - component: {fileID: 8443618010994270245}
   - component: {fileID: 4938004398733478818}
-  - component: {fileID: -3430641439537764950}
+  - component: {fileID: 2154665873238224424}
   m_Layer: 7
-  m_Name: Rock Gargolye
+  m_Name: Rock Gargoyle (Gargolye)
   m_TagString: Gargoyle
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -938,7 +938,7 @@ MonoBehaviour:
       Synchronize: 1
       ParameterType: 9
   AnimatorParametersExpanded: 0
---- !u!114 &-3430641439537764950
+--- !u!114 &2154665873238224424
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -947,10 +947,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 7994189637336163461}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6ff9210b0b89d15468662ec6909bbf9b, type: 3}
+  m_Script: {fileID: 11500000, guid: 78bb4a54aa3036f438ce961ef29a12bd, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::EnemyTyepe
-  enemyType: 2
+  m_EditorClassIdentifier: Assembly-CSharp::MaskBound.Enemy.EnemyClassification
+  family: 2
+  element: 2
 --- !u!1 &8738981600349694095
 GameObject:
   m_ObjectHideFlags: 0

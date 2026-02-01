@@ -628,9 +628,9 @@ GameObject:
   - component: {fileID: 1142009565825666053}
   - component: {fileID: 4715252231780251409}
   - component: {fileID: 6621200782827804501}
-  - component: {fileID: 2833614016284376144}
+  - component: {fileID: -3307793800504447677}
   m_Layer: 7
-  m_Name: Metal Gargolye
+  m_Name: Metal Gargoyle (Gargolye)
   m_TagString: Gargoyle
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -863,7 +863,7 @@ MonoBehaviour:
       Synchronize: 1
       ParameterType: 9
   AnimatorParametersExpanded: 0
---- !u!114 &2833614016284376144
+--- !u!114 &-3307793800504447677
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -872,10 +872,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 4687989918010321013}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6ff9210b0b89d15468662ec6909bbf9b, type: 3}
+  m_Script: {fileID: 11500000, guid: 78bb4a54aa3036f438ce961ef29a12bd, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::EnemyTyepe
-  enemyType: 2
+  m_EditorClassIdentifier: Assembly-CSharp::MaskBound.Enemy.EnemyClassification
+  family: 2
+  element: 1
 --- !u!1 &6350391332390794450
 GameObject:
   m_ObjectHideFlags: 0
