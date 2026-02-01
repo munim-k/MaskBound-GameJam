@@ -287,18 +287,39 @@ public class EnemySpawner : NetworkBehaviour
 
             if (step.waitUntilAllDeadBeforeNextStep)
             {
-                while (_aliveEnemyNetIds.Count > 0)
-                    yield return null;
+                if (_aliveEnemyNetIds.Count > 0)
+                {
+                    Debug.Log($"[EnemySpawner] Waiting for {_aliveEnemyNetIds.Count} enemies to die before next step...");
+                    while (_aliveEnemyNetIds.Count > 0)
+                        yield return null;
+                    Debug.Log("[EnemySpawner] Wave cleared. Proceeding.");
+                }
             }
         }
 
         while (_aliveEnemyNetIds.Count > 0)
-            yield return null;
+        {
+             Debug.Log($"[EnemySpawner] Waiting for final {_aliveEnemyNetIds.Count} enemies to die...");
+             yield return null;
+        }
         print("All enemies defeated in arena " + arenaIndex);
         OnArenaCompletedServer?.Invoke(arenaIndex);
         isArenaStarted = false;
         OpenDoorsClientRpc(arenaIndex);
-        _runRoutine = null;
+
+        Debug.Log($"[EnemySpawner] Arena {arenaIndex} complete. Waiting {timeBetweenArenas}s before next arena...");
+        yield return new WaitForSeconds(timeBetweenArenas);
+
+        if (arenas != null && arenaIndex + 1 < arenas.Length)
+        {
+            Debug.Log($"[EnemySpawner] Auto-starting next arena: {arenaIndex + 1}");
+            StartArenaServer(arenaIndex + 1);
+        }
+        else
+        {
+            Debug.Log("[EnemySpawner] All arenas completed sequence.");
+            _runRoutine = null;
+        }
     }
 
     [ClientRpc]
@@ -362,6 +383,7 @@ public class EnemySpawner : NetworkBehaviour
     private void RegisterAlive(NetworkObject enemyObj)
     {
         _aliveEnemyNetIds.Add(enemyObj.NetworkObjectId);
+        Debug.Log($"[EnemySpawner] Registered enemy {enemyObj.NetworkObjectId}. Total Alive: {_aliveEnemyNetIds.Count}");
 
         // ✅ Ensure the enemy has a reporter to notify despawn on server
         var reporter = enemyObj.GetComponent<EnemyLifetimeReporter>();
@@ -380,7 +402,8 @@ public class EnemySpawner : NetworkBehaviour
     {
         if (!IsServer) return;
 
-        _aliveEnemyNetIds.Remove(netId);
+        bool removed = _aliveEnemyNetIds.Remove(netId);
+        Debug.Log($"[EnemySpawner] Enemy {netId} despawned. Removed? {removed}. Remaining: {_aliveEnemyNetIds.Count}");
         OnAliveCountChangedServer?.Invoke(CurrentArenaIndex, _aliveEnemyNetIds.Count);
     }
 
@@ -426,11 +449,9 @@ public class EnemySpawner : NetworkBehaviour
         // OnDestroy is called when the GameObject is destroyed (Despawn calls Destroy)
         private void OnDestroy()
         {
-            // Verify we are on server is implicit if we only add this on server, 
-            // but checking IsServer here is hard since component is being destroyed.
-            // We rely on the fact that we only added this component on the server in RegisterAlive.
             if (TrackedNetId != 0)
             {
+                Debug.Log($"[EnemyLifetimeReporter] OnDestroy for {TrackedNetId}");
                 OnEnemyDespawnedServer?.Invoke(TrackedNetId);
             }
         }

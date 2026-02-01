@@ -17,9 +17,9 @@ namespace MaskBound.Combat
     public static class DamageCalculator
     {
         // Damage multipliers from GDD
-        private const float AFFINITY_MULTIPLIER = 2f;
-        private const float ELEMENT_MULTIPLIER = 2f;
-        private const float BASE_MULTIPLIER = 1f;
+        private const float AFFINITY_MULTIPLIER = 4f;
+        private const float ELEMENT_MULTIPLIER = 4f;
+        private const float BASE_MULTIPLIER = 0.5f;
 
         /// <summary>
         /// [GDD-COMPLIANT] Calculate final damage with all multipliers
