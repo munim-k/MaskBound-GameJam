@@ -207,10 +207,10 @@ MonoBehaviour:
     Path: event:/UI/UI Click
   <requestReceive>k__BackingField:
     Guid:
-      Data1: 1907640107
-      Data2: 1093274354
-      Data3: -226185337
-      Data4: -2128502716
+      Data1: 2000286404
+      Data2: 1172560716
+      Data3: -1019202129
+      Data4: 536315016
     Path: event:/UI/Ping
   <weakHit>k__BackingField:
     Guid:
