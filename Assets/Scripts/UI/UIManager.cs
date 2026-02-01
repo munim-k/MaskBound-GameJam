@@ -88,6 +88,8 @@ public class UIManager : NetworkBehaviour
 
     public void OnForceStartPressed()
     {
+        AudioManager.instance.PlayOneShot(FMODEvents.instance.uiClick, Vector3.zero);
+        
         Debug.Log("FORCE START BUTTON CLICKED");
 
         if (!IsServer || uploadPhaseStarted)

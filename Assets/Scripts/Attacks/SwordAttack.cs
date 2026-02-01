@@ -73,6 +73,8 @@ public class SwordAttack : NetworkBehaviour
         animator.SetBool(ANIM_IS_ATTACKING, true);
         animator.SetFloat(ANIM_ATTACK_SPEED, attackSpeed);
 
+        AudioManager.instance.PlayOneShot(FMODEvents.instance.swordSwing, transform.position);
+
         yield return new WaitForSeconds(attackDuration);
         animator.SetBool(ANIM_IS_ATTACKING, false);
     
@@ -138,6 +140,8 @@ public class SwordAttack : NetworkBehaviour
 
             float finalDamage = attackDamage;
 
+            bool wasStrong = false;
+
             // Calculate GDD-compliant damage if player components present
             if (playerAffinity != null && playerMask != null)
             {
@@ -149,6 +153,7 @@ public class SwordAttack : NetworkBehaviour
                     enemyType.Element
                 );
                 finalDamage = damageResult.FinalDamage;
+                wasStrong = damageResult.ElementCounter || damageResult.AffinityBonus;
             }
             else
             {
@@ -163,7 +168,8 @@ public class SwordAttack : NetworkBehaviour
                 { 
                     AttackerClientId = OwnerClientId,
                     DamageType = DamageType.Melee,
-                    HitPoint = attackPosition
+                    HitPoint = attackPosition,
+                    IsCritical = wasStrong
                 });
                 Debug.Log($"[SwordAttack] Client {OwnerClientId} hit {enemyNetObj.name} for {finalDamage} damage (base: {attackDamage})");
             }
@@ -173,7 +179,7 @@ public class SwordAttack : NetworkBehaviour
                 var enemyHealth = enemyNetObj.GetComponent<EnemyHealth>();
                 if (enemyHealth != null)
                 {
-                    enemyHealth.TakeDamage(finalDamage);
+                    enemyHealth.TakeDamage(finalDamage, wasStrong);
                     Debug.Log($"[SwordAttack] Client {OwnerClientId} hit {enemyNetObj.name} (legacy) for {finalDamage} damage");
                 }
                 else
@@ -207,6 +213,7 @@ public struct DamageSource
     public ulong AttackerClientId;
     public DamageType DamageType;
     public Vector3 HitPoint;
+    public bool IsCritical;
 }
 
 // TODO: Move to Core/Enums/DamageType.cs

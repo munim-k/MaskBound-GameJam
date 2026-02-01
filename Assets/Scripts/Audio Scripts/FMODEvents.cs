@@ -13,14 +13,14 @@ public class FMODEvents : MonoBehaviour
     [field: SerializeField] public EventReference music { get; private set; }
 
     [field: Header("Player SFX")]
-    [field: SerializeField] public EventReference playerWalk { get; private set; }
-    [field: SerializeField] public EventReference playerRun { get; private set; }
+    [field: SerializeField] public EventReference playerFootsteps { get; private set; }
     [field: SerializeField] public EventReference maskSwap { get; private set; }
     [field: SerializeField] public EventReference playerJump { get; private set; }
     [field: SerializeField] public EventReference playerLand { get; private set; }
     [field: SerializeField] public EventReference playerLowHealth { get; private set; }
     [field: SerializeField] public EventReference playerSlide { get; private set; }
     [field: SerializeField] public EventReference playerDeath { get; private set; }
+    [field: SerializeField] public EventReference playerHurt { get; private set; }
 
     [field: Header("Troll SFX")]
     [field: SerializeField] public EventReference trollWalk { get; private set; }

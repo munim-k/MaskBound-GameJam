@@ -97,7 +97,7 @@ namespace MaskBound.Core.Data
     /// </summary>
     public struct EnemySpawnData
     {
-        public EnemyType Type;
+        public Enums.EnemyType Type;
         public EnemyElement Element;
         public Vector3 SpawnPosition;
         public Quaternion SpawnRotation;
