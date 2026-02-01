@@ -55,6 +55,14 @@ public class TutorialController : MonoBehaviour
                 NextStep();
             }
         }
+        // STEP 5: Elemental Mask
+        else if (currentStep == 5)
+        {
+            if (Input.GetKeyDown(KeyCode.Return))
+            {
+                NextStep();
+            }
+        }
     }
 
     void ShowStep(int step)
@@ -77,9 +85,12 @@ public class TutorialController : MonoBehaviour
                 instructionText.text = "M to Open Mask. \nMasks of certain type when equipped deal more damage to their corresponding elemental.\nThey can be swapped with other players.";
                 break;
             case 5:
+                instructionText.text = "Elemental masks deal more damage to their corresponding element. Fire Mask for Ice enemies, Lightning mask for metal enemies, Earth mask for rock enemies.\n Press enter to continue";
+                break;
+            case 6:
                 instructionText.text = "Good luck!";
                 Cursor.visible = true;
-        Cursor.lockState = CursorLockMode.None;
+                Cursor.lockState = CursorLockMode.None;
                 Invoke("CloseTutorial", 3f); // Close after 2 seconds
                 break;
         }
