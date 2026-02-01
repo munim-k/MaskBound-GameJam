@@ -148,6 +148,7 @@ GameObject:
   - component: {fileID: 6998603940307985225}
   - component: {fileID: 4802500729274607587}
   - component: {fileID: 4932299218167377670}
+  - component: {fileID: 7567000134666486270}
   m_Layer: 8
   m_Name: Player
   m_TagString: Player
@@ -217,9 +218,6 @@ MonoBehaviour:
   attackDuration: 0.46666667
   attackCooldown: 0.4
   attackDamage: 2
-  hitLayerMask:
-    serializedVersion: 2
-    m_Bits: 128
   attackPoint: {fileID: 5827698352411964473}
   attackRange: 1.1
   enemyLayers:
@@ -284,7 +282,6 @@ MonoBehaviour:
   cameraTarget: {fileID: 3262098157382899668}
   mainCamera: {fileID: 0}
   animator: {fileID: 3894774771419190546}
-  walkSpeed: 4
   sprintSpeed: 8
   acceleration: 18
   deceleration: 22
@@ -527,7 +524,21 @@ MonoBehaviour:
   NetworkAnimatorExpanded: 0
   AuthorityMode: 1
   m_Animator: {fileID: 3894774771419190546}
-  TransitionStateInfoList: []
+  TransitionStateInfoList:
+  - IsCrossFadeExit: 0
+    Layer: 0
+    OriginatingState: 2081823275
+    DestinationState: 867364603
+    TransitionDuration: 0.25
+    TriggerNameHash: 125937960
+    TransitionIndex: 1
+  - IsCrossFadeExit: 0
+    Layer: 0
+    OriginatingState: 1748754976
+    DestinationState: 1364798825
+    TransitionDuration: 0.25
+    TriggerNameHash: 125937960
+    TransitionIndex: 1
   AnimatorParameterEntries:
     ParameterEntries:
     - name: isAttacking
@@ -542,6 +553,10 @@ MonoBehaviour:
       NameHash: -823668238
       Synchronize: 1
       ParameterType: 1
+    - name: Jump
+      NameHash: 125937960
+      Synchronize: 1
+      ParameterType: 9
   AnimatorParametersExpanded: 0
 --- !u!114 &4802500729274607587
 MonoBehaviour:
@@ -574,7 +589,20 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerMaskManager
   ShowTopMostFoldoutHeaderGroup: 1
-  currentMask: 0
+--- !u!114 &7567000134666486270
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1033921092754182687}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0e0fe6b62c888be4db5765ab684153b3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MaskBound.Player.PlayerAffinity
+  ShowTopMostFoldoutHeaderGroup: 1
+  affinityTarget: 0
 --- !u!1 &1132540606382413479
 GameObject:
   m_ObjectHideFlags: 0
