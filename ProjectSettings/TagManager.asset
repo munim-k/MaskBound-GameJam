@@ -8,7 +8,7 @@ TagManager:
   - PlayerHUD
   - Orc
   - Gargoyle
-  - RenderTargetCamera
+  - Scorpion
   layers:
   - Default
   - TransparentFX
