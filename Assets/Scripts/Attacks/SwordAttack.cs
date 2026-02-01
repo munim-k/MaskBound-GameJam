@@ -73,7 +73,8 @@ public class SwordAttack : NetworkBehaviour
         animator.SetBool(ANIM_IS_ATTACKING, true);
         animator.SetFloat(ANIM_ATTACK_SPEED, attackSpeed);
 
-        AudioManager.instance.PlayOneShot(FMODEvents.instance.swordSwing, transform.position);
+        if(IsOwner)
+            AudioManager.instance.PlayOneShot(FMODEvents.instance.swordSwing, transform.position);
 
         yield return new WaitForSeconds(attackDuration);
         animator.SetBool(ANIM_IS_ATTACKING, false);

@@ -50,7 +50,10 @@ public class PlayerHealth : NetworkBehaviour
     public override void OnNetworkSpawn()
     {
         // Initialize low health FMOD event
-        lowHealthInstance = AudioManager.instance.CreateInstance(FMODEvents.instance.playerLowHealth);
+        if(IsOwner)
+        {
+            lowHealthInstance = AudioManager.instance.CreateInstance(FMODEvents.instance.playerLowHealth);
+        }
 
         // 1. Find UI first
         
@@ -68,31 +71,80 @@ public class PlayerHealth : NetworkBehaviour
 
     public void TakeDamage(float amount)
     {
-        if (!IsServer) return; // Only server calculates damage
-
-        AudioManager.instance.PlayOneShot(FMODEvents.instance.playerHurt, transform.position);
+        if(IsOwner)
+            AudioManager.instance.PlayOneShot(FMODEvents.instance.playerHurt, transform.position);
+        
+        if (!IsServer) return; // Only server modifies health
 
         currentHealth.Value -= amount;
+        Debug.Log($"PlayerHealth: TakeDamage() called {amount}");
 
-        Debug.Log("PlayerHealth: TakeDamage() called" + amount);
-
+        // Heartbeat trigger
         if (currentHealth.Value < maxHealth * 0.2f && currentHealth.Value > 0)
         {
-            PLAYBACK_STATE playbackState;
-            lowHealthInstance.getPlaybackState(out playbackState);
-            if (playbackState != PLAYBACK_STATE.PLAYING)
+            // Tell the owning client to start heartbeat
+            StartHeartbeatClientRpc(new ClientRpcParams
             {
-                lowHealthInstance.start();
-            }
+                Send = new ClientRpcSendParams
+                {
+                    TargetClientIds = new ulong[] { OwnerClientId } // only owner hears heartbeat
+                }
+            });
         }
-            
+
+        // Death
         if (currentHealth.Value <= 0)
         {
             currentHealth.Value = 0;
-            lowHealthInstance.stop(FMOD.Studio.STOP_MODE.IMMEDIATE);
-            AudioManager.instance.PlayOneShot(FMODEvents.instance.playerDeath, transform.position);
+
+            // Stop heartbeat on owner
+            StopHeartbeatClientRpc(new ClientRpcParams
+            {
+                Send = new ClientRpcSendParams
+                {
+                    TargetClientIds = new ulong[] { OwnerClientId }
+                }
+            });
+
+            PlayDeathSoundClientRpc(new ClientRpcParams
+            {
+                Send = new ClientRpcSendParams
+                {
+                    TargetClientIds = new ulong[] { OwnerClientId }
+                }
+            });
+
             Die();
         }
+    }
+
+    [ClientRpc]
+    private void StartHeartbeatClientRpc(ClientRpcParams rpcParams = default)
+    {
+        if (!IsOwner) return; // Only owner plays the looping heartbeat
+
+        if (!lowHealthInstance.isValid())
+            lowHealthInstance = AudioManager.instance.CreateInstance(FMODEvents.instance.playerLowHealth);
+
+        PLAYBACK_STATE state;
+        lowHealthInstance.getPlaybackState(out state);
+        if (state != PLAYBACK_STATE.PLAYING)
+            lowHealthInstance.start();
+    }
+
+    [ClientRpc]
+    private void StopHeartbeatClientRpc(ClientRpcParams rpcParams = default)
+    {
+        if (!IsOwner) return;
+
+        if (lowHealthInstance.isValid())
+            lowHealthInstance.stop(FMOD.Studio.STOP_MODE.ALLOWFADEOUT);
+    }
+
+    [ClientRpc]
+    private void PlayDeathSoundClientRpc(ClientRpcParams rpcParams = default)
+    {
+        AudioManager.instance.PlayOneShot(FMODEvents.instance.playerDeath, transform.position);
     }
 
     private void UpdateUI(float previousValue, float newValue)
