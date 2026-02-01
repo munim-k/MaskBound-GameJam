@@ -31,18 +31,53 @@ namespace MaskBound.Player
         /// </summary>
         public EnemyFamily AffinityTarget => (EnemyFamily)affinityTarget.Value;
 
+        // Inspector-visible field for debugging
+        [Header("Debug Info")]
+        [SerializeField] private EnemyFamily currentAffinityInspector;
+
+        private void Update()
+        {
+            // Update inspector field for real-time visibility
+            currentAffinityInspector = (EnemyFamily)affinityTarget.Value;
+        }
+
         // Server-side pool of available affinities (static so it persists across all player instances)
         private static List<EnemyFamily> availableAffinities = new List<EnemyFamily>();
         private static bool poolInitialized = false;
 
+        // NEW: Store character selections from lobby (persists across scene loads)
+        public static Dictionary<ulong, EnemyFamily> SelectedAffinities = new Dictionary<ulong, EnemyFamily>();
+
         public override void OnNetworkSpawn()
         {
-            if (IsServer)
+            // NEW: Use selected affinity from character selection if available
+            if (IsServer && SelectedAffinities.ContainsKey(OwnerClientId))
             {
+                SetAffinityFromSelection(SelectedAffinities[OwnerClientId]);
+            }
+            else if (IsServer)
+            {
+                // Fallback: Random assignment if no selection exists (shouldn't happen in normal flow)
+                Debug.LogWarning($"[PlayerAffinity] No character selection found for Client {OwnerClientId}! Using random assignment as fallback.");
                 AssignRandomUniqueAffinity();
             }
             
             Debug.Log($"[PlayerAffinity] Client {OwnerClientId} spawned with affinity: {(EnemyFamily)affinityTarget.Value}");
+        }
+
+        /// <summary>
+        /// Set affinity from character selection (called when player spawns in game scene)
+        /// </summary>
+        public void SetAffinityFromSelection(EnemyFamily selectedAffinity)
+        {
+            if (!IsServer)
+            {
+                Debug.LogError("[PlayerAffinity] SetAffinityFromSelection can only be called on server!");
+                return;
+            }
+
+            affinityTarget.Value = (int)selectedAffinity;
+            Debug.Log($"[PlayerAffinity] ✅ Set affinity from character selection: {selectedAffinity} for Client {OwnerClientId}");
         }
 
         /// <summary>
