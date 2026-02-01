@@ -97,7 +97,7 @@ namespace MaskBound.Player
         }
 
         /// <summary>
-        /// Spawn a mask model and attach it to the player
+        /// Spawn a mask model and attach it to the player's mask parent object
         /// </summary>
         private void SpawnMask(MaskType maskType)
         {
@@ -109,18 +109,33 @@ namespace MaskBound.Player
                 return;
             }
 
+            // Get the faceLocation component from the player
+            faceLocation faceLocationComp = GetComponent<faceLocation>();
+            if (faceLocationComp == null)
+            {
+                Debug.LogError($"[MaskVisuals] Player {gameObject.name} is missing faceLocation component!");
+                return;
+            }
+
+            GameObject maskParent = faceLocationComp.MaskParentObject;
+            if (maskParent == null)
+            {
+                Debug.LogError($"[MaskVisuals] maskParentObject is null on player {gameObject.name}!");
+                return;
+            }
+
             // Instantiate mask
             currentMaskInstance = Instantiate(maskPrefab);
             
-            // Parent to player
-            currentMaskInstance.transform.SetParent(transform);
+            // Parent to designated mask parent object
+            currentMaskInstance.transform.SetParent(maskParent.transform);
             
-            // Set local transform
-            currentMaskInstance.transform.localPosition = maskLocalPosition;
-            currentMaskInstance.transform.localRotation = Quaternion.Euler(maskLocalRotation);
-            currentMaskInstance.transform.localScale = Vector3.one * maskLocalScale;
+            // Set local transform - zero offset, no scale change
+            currentMaskInstance.transform.localPosition = Vector3.zero;
+            currentMaskInstance.transform.localRotation = Quaternion.identity;
+            currentMaskInstance.transform.localScale = Vector3.one;
 
-            Debug.Log($"[MaskVisuals] Spawned {maskType} mask at position {maskLocalPosition}");
+            Debug.Log($"[MaskVisuals] ✅ Spawned {maskType} mask in {maskParent.name} with zero offset and original scale");
         }
 
         /// <summary>

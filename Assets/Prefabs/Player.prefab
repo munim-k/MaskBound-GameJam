@@ -93,7 +93,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.NetworkObject
-  GlobalObjectIdHash: 452422550
+  GlobalObjectIdHash: 1631707342
   InScenePlacedSourceGlobalObjectIdHash: 0
   DeferredDespawnTick: 0
   Ownership: 1
@@ -528,7 +528,7 @@ MonoBehaviour:
   fireMaskPrefab: {fileID: 7595863498646709058, guid: 732137305736f6442a435a64c38e7940, type: 3}
   lightningMaskPrefab: {fileID: 7595863498646709058, guid: 3c4e3dc0d02471e41b2763fdc861fd49, type: 3}
   earthMaskPrefab: {fileID: 7595863498646709058, guid: 34c70a68a3f18b84fa7ce719e17b98f4, type: 3}
-  maskLocalPosition: {x: -123, y: 1.3891, z: 0.1785}
+  maskLocalPosition: {x: -0.0123, y: 1.3891, z: 0.1785}
   maskLocalRotation: {x: 0, y: 0, z: 0}
   maskLocalScale: 0.2
 --- !u!114 &6713848427973578940
@@ -544,6 +544,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::faceLocation
   faceParentObjectField: {fileID: 3227621370651661169}
+  maskParentObjectField: {fileID: 0}
 --- !u!1 &3227621370651661169
 GameObject:
   m_ObjectHideFlags: 0
@@ -750,6 +751,37 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::RenderTexturePlayer
   ShowTopMostFoldoutHeaderGroup: 1
   camera: {fileID: 3392023531766652604}
+--- !u!1 &3941089759831414751
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 8574445978742202331}
+  m_Layer: 0
+  m_Name: MaskOffset
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &8574445978742202331
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3941089759831414751}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0.69604814, y: 0.04660347, z: 0.061408207, w: 0.71384466}
+  m_LocalPosition: {x: 0.72, y: -7.06, z: -3.68}
+  m_LocalScale: {x: 21.019001, y: 21.019001, z: 21.019001}
+  m_ConstrainProportionsScale: 1
+  m_Children: []
+  m_Father: {fileID: 4034556528212239085}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &4395558326344460407
 GameObject:
   m_ObjectHideFlags: 0
@@ -863,6 +895,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 7208261743932278219, guid: 57418a9166ddeaa46afaf0f20c0869b2, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1260403674024905934}
+    - targetCorrespondingSourceObject: {fileID: 7208261743932278219, guid: 57418a9166ddeaa46afaf0f20c0869b2, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 8574445978742202331}
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 57418a9166ddeaa46afaf0f20c0869b2, type: 3}
 --- !u!95 &189126711064746679 stripped
