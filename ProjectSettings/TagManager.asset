@@ -8,6 +8,7 @@ TagManager:
   - PlayerHUD
   - Orc
   - Gargoyle
+  - RenderTargetCamera
   layers:
   - Default
   - TransparentFX
