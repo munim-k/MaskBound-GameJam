@@ -195,7 +195,7 @@ GameObject:
   - component: {fileID: 5513906531532430726}
   m_Layer: 7
   m_Name: Ice Orc
-  m_TagString: Untagged
+  m_TagString: Orc
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0

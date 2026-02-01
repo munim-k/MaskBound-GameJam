@@ -86,7 +86,7 @@ public class SwordAttack : NetworkBehaviour
 
         if (hitColliders.Length == 0)
         {
-            Debug.Log($"[SwordAttack] Client {OwnerClientId} attack missed (no targets in range)");
+//            Debug.Log($"[SwordAttack] Client {OwnerClientId} attack missed (no targets in range)");
             return;
         }
 

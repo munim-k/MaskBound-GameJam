@@ -69,7 +69,7 @@ namespace MaskBound.Combat
         {
             return (mask, family) switch
             {
-                (MaskType.Fire, EnemyFamily.Troll) => true,
+                (MaskType.Fire, EnemyFamily.Orc) => true,
                 (MaskType.Lightning, EnemyFamily.ScorpionMan) => true,
                 (MaskType.Earth, EnemyFamily.Gargoyle) => true,
                 _ => false
@@ -99,7 +99,7 @@ namespace MaskBound.Combat
             // Priority 1: Affinity counter (2x)
             MaskType affinityMask = family switch
             {
-                EnemyFamily.Troll => MaskType.Fire,
+                EnemyFamily.Orc => MaskType.Fire,
                 EnemyFamily.ScorpionMan => MaskType.Lightning,
                 EnemyFamily.Gargoyle => MaskType.Earth,
                 _ => MaskType.Fire

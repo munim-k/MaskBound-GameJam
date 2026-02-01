@@ -6,7 +6,7 @@ using UnityEngine;
 
 public enum EnemyFamily
 {
-    Troll,
+    Orc,
     ScorpionMan,
     Gargoyle
 }
@@ -29,20 +29,26 @@ public enum SpawnPointMode
 [DisallowMultipleComponent]
 public class EnemySpawner : NetworkBehaviour
 {
-    [Header("Spawn Points")]
-    [Tooltip("Possible spawn locations inside the arena.")]
-    [SerializeField] private Transform[] spawnPoints;
+    [Header("Spawn Points")] [Tooltip("Possible spawn locations inside the arena.")] [SerializeField]
+    private Transform[] spawnPoints;
 
     [Header("Enemy Prefabs (Networked)")]
     [Tooltip("Each prefab MUST have a NetworkObject and be registered in NetworkManager prefab list.")]
-    [SerializeField] private EnemyPrefabEntry[] enemyPrefabs;
+    [SerializeField]
+    private GameObject[] enemyGameObjects;
+
+    [SerializeField] private GameObject[] Orcs;
+    [SerializeField] private GameObject[] ScorpionMen;
+    [SerializeField] private GameObject[] Gargoyles;
+
+    private EnemyPrefabEntry[] enemyPrefabs;
 
     [Header("Arena Sequences (Scripted, not waves)")]
     [Tooltip("Arena-based scripted spawns. Arena ends when all spawned enemies are dead.")]
-    [SerializeField] private ArenaSequence[] arenas;
+    [SerializeField]
+    private ArenaSequence[] arenas;
 
-    [Header("Runtime")]
-    [SerializeField] private bool autoStartArenaOnServer = false;
+    [Header("Runtime")] [SerializeField] private bool autoStartArenaOnServer = false;
     [SerializeField] private int startArenaIndex = 0;
 
     // Alive tracking (server authority)
@@ -50,26 +56,73 @@ public class EnemySpawner : NetworkBehaviour
     private int _roundRobinIndex = 0;
     private Coroutine _runRoutine;
 
-    public event Action<int> OnArenaStartedServer;           // arenaIndex
-    public event Action<int> OnArenaCompletedServer;         // arenaIndex
+    public event Action<int> OnArenaStartedServer; // arenaIndex
+    public event Action<int> OnArenaCompletedServer; // arenaIndex
     public event Action<int, int> OnAliveCountChangedServer; // arenaIndex, alive
 
     public int CurrentArenaIndex { get; private set; } = -1;
 
     #region Inspector structs
 
+    private void Start()
+    {
+        if (enemyGameObjects == null || enemyGameObjects.Length == 0)
+        {
+            Debug.LogError("[EnemySpawner] enemyGameObjects is empty. Assign prefabs in inspector.");
+            enemyPrefabs = Array.Empty<EnemyPrefabEntry>();
+            return;
+        }
+
+        enemyPrefabs = new EnemyPrefabEntry[enemyGameObjects.Length];
+
+        for (int i = 0; i < enemyGameObjects.Length; i++)
+        {
+            var go = enemyGameObjects[i];
+            if (go == null)
+            {
+                Debug.LogError($"[EnemySpawner] enemyGameObjects[{i}] is null.");
+                continue;
+            }
+
+            EnemyFamily enemytag;
+
+            // Prefer explicit mapping, avoid relying on tag if you can.
+            // If you keep tags, make sure these tags exist in Unity Tag Manager.
+            var tag = go.tag;
+
+            if (tag == "Orc") enemytag = EnemyFamily.Orc;
+            else if (tag == "ScorpionMan") enemytag = EnemyFamily.ScorpionMan;
+            else if (tag == "Gargoyle") enemytag = EnemyFamily.Gargoyle;
+            else
+            {
+                Debug.LogError($"[EnemySpawner] Prefab {go.name} has unknown tag '{tag}'.");
+                continue;
+            }
+
+            enemyPrefabs[i] = new EnemyPrefabEntry
+            {
+                family = enemytag,
+                prefab = go
+            };
+        }
+    }
+
+
     [Serializable]
     public struct EnemyPrefabEntry
     {
         public EnemyFamily family;
-        [Tooltip("Prefab with NetworkObject + enemy scripts. Element can be applied at runtime.")]
-        public NetworkObject prefab;
+
+        [Tooltip("Prefab with NetworkObject + enemy scripts.")]
+        public GameObject prefab; // ✅ Inspector-friendly
     }
+
 
     [Serializable]
     public class ArenaSequence
     {
         public string arenaName = "Arena";
+
         [Tooltip("Optional delay before arena begins.")]
         public float arenaIntroDelay = 0f;
 
@@ -80,8 +133,7 @@ public class EnemySpawner : NetworkBehaviour
     [Serializable]
     public class Step
     {
-        [Header("Spawn Spec")]
-        public EnemyFamily family;
+        [Header("Spawn Spec")] public EnemyFamily family;
         public EnemySubElement element = EnemySubElement.None;
 
         [Min(1)] public int count = 1;
@@ -92,8 +144,7 @@ public class EnemySpawner : NetworkBehaviour
         [Tooltip("Time between each spawn inside this step.")]
         public float spawnInterval = 0.25f;
 
-        [Header("Spawn Point Selection")]
-        public SpawnPointMode spawnPointMode = SpawnPointMode.Random;
+        [Header("Spawn Point Selection")] public SpawnPointMode spawnPointMode = SpawnPointMode.Random;
 
         [Tooltip("Used when SpawnPointMode = ByIndex")]
         public int spawnPointIndex = 0;
@@ -162,7 +213,7 @@ public class EnemySpawner : NetworkBehaviour
     {
         if (!IsServer) return null;
 
-        var prefab = GetPrefab(family);
+        var prefab = GetPrefab(family, element);
         if (prefab == null)
         {
             Debug.LogError($"[EnemySpawner] Missing prefab for {family}");
@@ -170,14 +221,20 @@ public class EnemySpawner : NetworkBehaviour
         }
 
         var spawned = Instantiate(prefab, point.position, point.rotation);
-        spawned.Spawn(true);
+        var netObj = spawned.GetComponent<NetworkObject>();
 
-        RegisterAlive(spawned);
+        if (netObj == null)
+        {
+            Debug.LogError($"Enemy prefab {prefab.name} is missing NetworkObject!");
+            Destroy(spawned);
+            return null;
+        }
 
-        var elementReceiver = spawned.GetComponent<IEnemyElementReceiver>();
-        elementReceiver?.ServerSetElement(element);
+        netObj.Spawn(true);
+        RegisterAlive(netObj);
+        
 
-        return spawned;
+        return netObj;
     }
 
     // =========================================================
@@ -280,38 +337,44 @@ public class EnemySpawner : NetworkBehaviour
     // Prefab lookup
     // =========================================================
 
-    private NetworkObject GetPrefab(EnemyFamily family)
+    private GameObject GetPrefab(EnemyFamily family, EnemySubElement element)
     {
-        if (enemyPrefabs == null) return null;
-        for (int i = 0; i < enemyPrefabs.Length; i++)
+        GameObject[] targetArray = null;
+
+        // 1. Select the correct Family array
+        switch (family)
         {
-            if (enemyPrefabs[i].family == family)
-                return enemyPrefabs[i].prefab;
+            case EnemyFamily.Orc: targetArray = Orcs; break;
+            case EnemyFamily.ScorpionMan: targetArray = ScorpionMen; break;
+            case EnemyFamily.Gargoyle: targetArray = Gargoyles; break;
         }
-        return null;
+
+        if (targetArray == null || targetArray.Length == 0) return null;
+
+        // 2. Return based on Element index
+        // Mapping: 0=None/Basic, 1=Ice, 2=Metal, 3=Rock
+        switch (element)
+        {
+            case EnemySubElement.None:  return targetArray[0]; 
+            case EnemySubElement.Ice:   return targetArray[1];
+            case EnemySubElement.Metal: return targetArray[2];
+            case EnemySubElement.Rock:  return targetArray[3];
+            default: return targetArray[0];
+        }
     }
-}
 
-/// <summary>
-/// Add this to enemy prefabs (or EnemySpawner adds it at runtime).
-/// It fires when the NetworkObject is despawned, which is the correct NGO lifecycle hook.
-/// </summary>
-public class EnemyLifetimeReporter : NetworkBehaviour
-{
-    public static event Action<NetworkObject> OnEnemyDespawnedServer;
-
-    public override void OnNetworkDespawn()
+    /// <summary>
+    /// Add this to enemy prefabs (or EnemySpawner adds it at runtime).
+    /// It fires when the NetworkObject is despawned, which is the correct NGO lifecycle hook.
+    /// </summary>
+    public class EnemyLifetimeReporter : NetworkBehaviour
     {
-        if (!IsServer) return;
-        OnEnemyDespawnedServer?.Invoke(NetworkObject);
-    }
-}
+        public static event Action<NetworkObject> OnEnemyDespawnedServer;
 
-/// <summary>
-/// Optional interface: put this on your enemy prefab if you want element variants
-/// to be applied at spawn time (e.g. set VFX, defense, poise).
-/// </summary>
-public interface IEnemyElementReceiver
-{
-    void ServerSetElement(EnemySubElement element);
+        public override void OnNetworkDespawn()
+        {
+            if (!IsServer) return;
+            OnEnemyDespawnedServer?.Invoke(NetworkObject);
+        }
+    }
 }
