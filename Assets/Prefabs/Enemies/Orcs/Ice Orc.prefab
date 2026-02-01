@@ -193,8 +193,9 @@ GameObject:
   - component: {fileID: 3003739025852377955}
   - component: {fileID: 4855596225985851667}
   - component: {fileID: 5513906531532430726}
+  - component: {fileID: 511011596792305952}
   m_Layer: 7
-  m_Name: Ice Orc
+  m_Name: Ice Orc (Orc)
   m_TagString: Orc
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -444,6 +445,20 @@ MonoBehaviour:
       Synchronize: 1
       ParameterType: 9
   AnimatorParametersExpanded: 0
+--- !u!114 &511011596792305952
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2480258066634101113}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 78bb4a54aa3036f438ce961ef29a12bd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MaskBound.Enemy.EnemyClassification
+  family: 0
+  element: 0
 --- !u!1 &4132919183733628609
 GameObject:
   m_ObjectHideFlags: 0

@@ -433,8 +433,9 @@ GameObject:
   - component: {fileID: 4834812144073434533}
   - component: {fileID: 1181316657248711113}
   - component: {fileID: 3220513622782200045}
+  - component: {fileID: -7468593799930120229}
   m_Layer: 7
-  m_Name: Metal Orc
+  m_Name: Metal Orc (Orc)
   m_TagString: Orc
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -684,6 +685,20 @@ MonoBehaviour:
       Synchronize: 1
       ParameterType: 9
   AnimatorParametersExpanded: 0
+--- !u!114 &-7468593799930120229
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4656215805415666946}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 78bb4a54aa3036f438ce961ef29a12bd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MaskBound.Enemy.EnemyClassification
+  family: 0
+  element: 1
 --- !u!1 &6824045380334905575
 GameObject:
   m_ObjectHideFlags: 0

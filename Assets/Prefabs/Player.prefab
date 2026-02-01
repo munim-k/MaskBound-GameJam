@@ -603,7 +603,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MaskBound.Player.PlayerAffinity
   ShowTopMostFoldoutHeaderGroup: 1
-  affinityTarget: 0
 --- !u!114 &3734938955393871191
 MonoBehaviour:
   m_ObjectHideFlags: 0

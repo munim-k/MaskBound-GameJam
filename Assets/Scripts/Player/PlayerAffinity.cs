@@ -19,12 +19,17 @@ namespace MaskBound.Player
     {
         [Header("Permanent Affinity (GDD)")]
         [Tooltip("Which enemy family this player deals bonus damage to. Cannot be changed after spawn.")]
-        [SerializeField] private EnemyFamily affinityTarget;
+        // Use int for network sync, cast to/from EnemyFamily enum
+        private NetworkVariable<int> affinityTarget = new NetworkVariable<int>(
+            (int)EnemyFamily.Orc,
+            NetworkVariableReadPermission.Everyone,
+            NetworkVariableWritePermission.Server
+        );
 
         /// <summary>
         /// Read-only access to this player's permanent affinity
         /// </summary>
-        public EnemyFamily AffinityTarget => affinityTarget;
+        public EnemyFamily AffinityTarget => (EnemyFamily)affinityTarget.Value;
 
         // Server-side pool of available affinities (static so it persists across all player instances)
         private static List<EnemyFamily> availableAffinities = new List<EnemyFamily>();
@@ -37,7 +42,7 @@ namespace MaskBound.Player
                 AssignRandomUniqueAffinity();
             }
             
-            Debug.Log($"[PlayerAffinity] Client {OwnerClientId} spawned with affinity: {affinityTarget}");
+            Debug.Log($"[PlayerAffinity] Client {OwnerClientId} spawned with affinity: {(EnemyFamily)affinityTarget.Value}");
         }
 
         /// <summary>
@@ -62,12 +67,12 @@ namespace MaskBound.Player
 
             // Pick random affinity from available pool
             int randomIndex = Random.Range(0, availableAffinities.Count);
-            affinityTarget = availableAffinities[randomIndex];
+            affinityTarget.Value = (int)availableAffinities[randomIndex]; // Cast enum to int for NetworkVariable
             
             // Remove from pool so it's not assigned to another player
             availableAffinities.RemoveAt(randomIndex);
             
-            Debug.Log($"[PlayerAffinity] Server randomly assigned {affinityTarget} to Client {OwnerClientId}");
+            Debug.Log($"[PlayerAffinity] Server randomly assigned {(EnemyFamily)affinityTarget.Value} to Client {OwnerClientId}");
             Debug.Log($"[PlayerAffinity] Remaining affinities: [{string.Join(", ", availableAffinities)}]");
         }
 
@@ -85,11 +90,11 @@ namespace MaskBound.Player
         /// Check if this player's affinity counters the given enemy family
         /// Returns true for 2x damage multiplier
         /// </summary>
-        public bool CountersFamily(EnemyFamily family)
+        public bool CheckAffinityCounter(EnemyFamily targetFamily)
         {
-            bool counters = affinityTarget == family;
-            Debug.Log($"[PlayerAffinity] Client {OwnerClientId}: Affinity {affinityTarget} vs {family} = {counters}");
-            return counters;
+            bool isCounter = (EnemyFamily)affinityTarget.Value == targetFamily;
+            Debug.Log($"[PlayerAffinity] Client {OwnerClientId}: Affinity {(EnemyFamily)affinityTarget.Value} vs {targetFamily} = {isCounter}");
+            return isCounter;
         }
 
         /// <summary>
@@ -97,7 +102,7 @@ namespace MaskBound.Player
         /// </summary>
         public string GetAffinityDescription()
         {
-            return affinityTarget switch
+            return ((EnemyFamily)affinityTarget.Value) switch
             {
                 EnemyFamily.Orc => "Orc Hunter - Bonus damage vs Orcs",
                 EnemyFamily.ScorpionMan => "Scorpion Slayer - Bonus damage vs Scorpion Men",

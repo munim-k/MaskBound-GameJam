@@ -3,6 +3,11 @@ using UnityEngine.InputSystem;
 using Unity.Netcode;
 using System.Collections;
 using System.Collections.Generic;
+using MaskBound.Combat;
+using MaskBound.Player;
+using MaskBound.Enemy;
+using MaskBound.Core.Interfaces;
+using MaskBound.Core.Data;
 
 /// <summary>
 /// Server-authoritative sword attack system.
@@ -93,6 +98,20 @@ public class SwordAttack : NetworkBehaviour
         // Track unique hits (avoid hitting same enemy multiple times)
         HashSet<NetworkObject> hitEnemies = new HashSet<NetworkObject>();
 
+        // Cache player components ONCE (performance optimization)
+        var playerAffinity = GetComponent<PlayerAffinity>();
+        var playerMask = GetComponent<PlayerMaskManager>();
+
+        // Validate player components exist
+        if (playerAffinity == null)
+        {
+            Debug.LogError("[SwordAttack] Player missing PlayerAffinity component!");
+        }
+        if (playerMask == null)
+        {
+            Debug.LogError("[SwordAttack] Player missing PlayerMaskManager component!");
+        }
+
         foreach (Collider col in hitColliders)
         {
             // Get NetworkObject root to identify unique enemy
@@ -109,17 +128,44 @@ public class SwordAttack : NetworkBehaviour
 
             hitEnemies.Add(enemyNetObj);
 
+            // Get enemy classification for GDD damage calculation
+            var enemyType = enemyNetObj.GetComponent<EnemyClassification>();
+            if (enemyType == null)
+            {
+                Debug.LogWarning($"[SwordAttack] {enemyNetObj.name} missing EnemyClassification component! Skipping damage calculation.");
+                continue; // CRITICAL FIX: Skip this enemy instead of trying to use null reference
+            }
+
+            float finalDamage = attackDamage;
+
+            // Calculate GDD-compliant damage if player components present
+            if (playerAffinity != null && playerMask != null)
+            {
+                var damageResult = DamageCalculator.CalculateDamage(
+                    attackDamage,
+                    playerAffinity.AffinityTarget,
+                    playerMask.CurrentMask,
+                    enemyType.Family,
+                    enemyType.Element
+                );
+                finalDamage = damageResult.FinalDamage;
+            }
+            else
+            {
+                Debug.LogWarning("[SwordAttack] Missing player components - using base damage only");
+            }
+
             // Apply damage via IDamageable interface (future-proof)
             var damageable = enemyNetObj.GetComponent<IDamageable>();
             if (damageable != null)
             {
-                damageable.TakeDamage(attackDamage, new DamageSource 
+                damageable.TakeDamage(finalDamage, new DamageSource 
                 { 
                     AttackerClientId = OwnerClientId,
                     DamageType = DamageType.Melee,
                     HitPoint = attackPosition
                 });
-                Debug.Log($"[SwordAttack] Client {OwnerClientId} hit {enemyNetObj.name} for {attackDamage} damage");
+                Debug.Log($"[SwordAttack] Client {OwnerClientId} hit {enemyNetObj.name} for {finalDamage} damage (base: {attackDamage})");
             }
             else
             {
@@ -127,8 +173,8 @@ public class SwordAttack : NetworkBehaviour
                 var enemyHealth = enemyNetObj.GetComponent<EnemyHealth>();
                 if (enemyHealth != null)
                 {
-                    enemyHealth.TakeDamage(attackDamage);
-                    Debug.Log($"[SwordAttack] Client {OwnerClientId} hit {enemyNetObj.name} (legacy) for {attackDamage} damage");
+                    enemyHealth.TakeDamage(finalDamage);
+                    Debug.Log($"[SwordAttack] Client {OwnerClientId} hit {enemyNetObj.name} (legacy) for {finalDamage} damage");
                 }
                 else
                 {
