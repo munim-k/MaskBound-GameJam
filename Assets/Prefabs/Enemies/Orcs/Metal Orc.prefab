@@ -352,7 +352,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::EnemyHealth
   ShowTopMostFoldoutHeaderGroup: 1
   healthBar: {fileID: 4764416209304007341}
-  maxHealth: 5
+  maxHealth: 10
   animator: {fileID: 3170925844060412557}
   currentHealth:
     m_InternalValue: 0

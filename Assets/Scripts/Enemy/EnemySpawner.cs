@@ -297,11 +297,24 @@ public class EnemySpawner : NetworkBehaviour
         print("All enemies defeated in arena " + arenaIndex);
         OnArenaCompletedServer?.Invoke(arenaIndex);
         isArenaStarted = false;
-        for(int i=0;i<doors.Length;i++)
-        {
-            doors[i].OpenDoor(arenaIndex);
-        }
+        OpenDoorsClientRpc(arenaIndex);
         _runRoutine = null;
+    }
+
+    [ClientRpc]
+    private void OpenDoorsClientRpc(int arenaIndex)
+    {
+        Debug.Log($"[EnemySpawner] OpenDoorsClientRpc received for arena {arenaIndex}");
+        if (doors != null)
+        {
+            for (int i = 0; i < doors.Length; i++)
+            {
+                if (doors[i] != null)
+                {
+                    doors[i].OpenDoor(arenaIndex);
+                }
+            }
+        }
     }
 
     // =========================================================
