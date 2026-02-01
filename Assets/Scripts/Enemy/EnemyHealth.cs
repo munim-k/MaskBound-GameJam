@@ -56,27 +56,32 @@ namespace MaskBound.Enemy
         }
 
         /// <summary>
-        /// Legacy damage method - redirects to interface method
+        /// Legacy damage method - redirects to ServerRpc
         /// </summary>
         public void TakeDamage(float damage)
         {
-            TakeDamage(damage, new DamageSource 
+            TakeDamageServerRpc(damage, new DamageSource 
             { 
-                DamageType = DamageType.Environmental 
+                DamageType = DamageType.Environmental,
+                AttackerClientId = null
             });
         }
 
         /// <summary>
-        /// IDamageable implementation - server validates and applies damage
+        /// IDamageable implementation - clients call this to request damage
         /// </summary>
         public void TakeDamage(float amount, DamageSource source)
         {
-            if (!IsServer)
-            {
-                Debug.LogWarning($"[EnemyHealth] TakeDamage called on client - damage ignored");
-                return;
-            }
+            TakeDamageServerRpc(amount, source);
+        }
 
+        /// <summary>
+        /// Server RPC - clients call this to request damage application
+        /// Server validates and applies damage
+        /// </summary>
+        [ServerRpc(RequireOwnership = false)]
+        private void TakeDamageServerRpc(float amount, DamageSource source)
+        {
             if (!IsAlive)
             {
                 Debug.LogWarning($"[EnemyHealth] Damage attempted on dead enemy");
@@ -94,18 +99,16 @@ namespace MaskBound.Enemy
             // Check for death
             if (currentHealth.Value <= 0)
             {
-                // Die(source);
-                killEnemyServerRpc();
+                Die(source);
             }
         }
 
         /// <summary>
-        /// Handle enemy death
+        /// Handle enemy death (server-only)
         /// </summary>
-        private void Die()
+        private void Die(DamageSource source)
         {
-
-            // Debug.Log($"[EnemyHealth] {gameObject.name} died (killed by client {source.AttackerClientId})");
+            Debug.Log($"[EnemyHealth] {gameObject.name} died (killed by client {source.AttackerClientId})");
 
             // TODO: Play death animation
             // TODO: Drop loot/rewards
@@ -113,12 +116,6 @@ namespace MaskBound.Enemy
 
             // Despawn instead of Destroy for networked objects
             GetComponent<NetworkObject>().Despawn();
-        }
-
-        [ServerRpc(RequireOwnership = false)]
-        private void killEnemyServerRpc(ServerRpcParams rpcParams = default)
-        {
-            Die();
         }
 
         /// <summary>
