@@ -149,6 +149,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 6430790114209021793, guid: 29e00087f4178244fa2525f154080310, type: 3}
       insertIndex: -1
       addedObject: {fileID: 3198231893375869623}
+    - targetCorrespondingSourceObject: {fileID: 6430790114209021793, guid: 29e00087f4178244fa2525f154080310, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 845051761987844382}
   m_SourcePrefab: {fileID: 100100000, guid: 29e00087f4178244fa2525f154080310, type: 3}
 --- !u!4 &1211330342338346658 stripped
 Transform:
@@ -172,6 +175,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6d1ab0f3331268148aee934fa284bacb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ScorpionAttackAudio
+--- !u!114 &845051761987844382
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2262510045951779505}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 445ddae2cf6a48b280704d589b671bb9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EnemyAnimationRelay
 --- !u!95 &4292669701346725432 stripped
 Animator:
   m_CorrespondingSourceObject: {fileID: 9064177281784239080, guid: 29e00087f4178244fa2525f154080310, type: 3}
