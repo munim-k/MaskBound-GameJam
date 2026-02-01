@@ -217,6 +217,8 @@ MonoBehaviour:
   bottomClamp: -30
   sprintKey: 304
   slideKey: 99
+  minStepRate: 1
+  maxStepRate: 4
 --- !u!114 &5020256842547662714
 MonoBehaviour:
   m_ObjectHideFlags: 0
