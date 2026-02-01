@@ -94,18 +94,18 @@ namespace MaskBound.Enemy
             // Check for death
             if (currentHealth.Value <= 0)
             {
-                Die(source);
+                // Die(source);
+                killEnemyServerRpc();
             }
         }
 
         /// <summary>
         /// Handle enemy death
         /// </summary>
-        private void Die(DamageSource source)
+        private void Die()
         {
-            if (!IsServer) return;
 
-            Debug.Log($"[EnemyHealth] {gameObject.name} died (killed by client {source.AttackerClientId})");
+            // Debug.Log($"[EnemyHealth] {gameObject.name} died (killed by client {source.AttackerClientId})");
 
             // TODO: Play death animation
             // TODO: Drop loot/rewards
@@ -113,6 +113,12 @@ namespace MaskBound.Enemy
 
             // Despawn instead of Destroy for networked objects
             GetComponent<NetworkObject>().Despawn();
+        }
+
+        [ServerRpc(RequireOwnership = false)]
+        private void killEnemyServerRpc(ServerRpcParams rpcParams = default)
+        {
+            Die();
         }
 
         /// <summary>
