@@ -33,7 +33,7 @@ namespace MaskBound.UI
         [Header("References")]
         [SerializeField] private CharacterSelectionManager selectionManager;
 
-        private EnemyFamily mySelection = 0;
+        private EnemyFamily? mySelection = null; // Nullable to avoid conflict with Orc=0
         private bool isConfirmed = false;
 
         private void Start()
@@ -106,7 +106,7 @@ namespace MaskBound.UI
         /// </summary>
         private void OnConfirmButtonClicked()
         {
-            if (mySelection == 0)
+            if (!mySelection.HasValue) // FIX: Check HasValue instead of == 0
             {
                 Debug.LogWarning("[CharacterSelection] Cannot confirm without selection!");
                 return;
@@ -150,17 +150,17 @@ namespace MaskBound.UI
             // Update Orc button
             UpdateButton(orcButton, orcButtonText, EnemyFamily.Orc, 
                 available.Contains(EnemyFamily.Orc), 
-                mySelection == EnemyFamily.Orc);
+                mySelection.HasValue && mySelection.Value == EnemyFamily.Orc);
 
             // Update Scorpio button
             UpdateButton(scorpioButton, scorpioButtonText, EnemyFamily.ScorpionMan, 
                 available.Contains(EnemyFamily.ScorpionMan), 
-                mySelection == EnemyFamily.ScorpionMan);
+                mySelection.HasValue && mySelection.Value == EnemyFamily.ScorpionMan);
 
             // Update Gargoyle button
             UpdateButton(gargoyleButton, gargoyleButtonText, EnemyFamily.Gargoyle, 
                 available.Contains(EnemyFamily.Gargoyle), 
-                mySelection == EnemyFamily.Gargoyle);
+                mySelection.HasValue && mySelection.Value == EnemyFamily.Gargoyle);
         }
 
         /// <summary>
@@ -205,13 +205,13 @@ namespace MaskBound.UI
         {
             if (selectedAffinityText == null) return;
 
-            if (mySelection == 0)
+            if (!mySelection.HasValue)
             {
                 selectedAffinityText.text = "Selected: None";
             }
             else
             {
-                string name = mySelection switch
+                string name = mySelection.Value switch
                 {
                     EnemyFamily.Orc => "Orc Hunter",
                     EnemyFamily.ScorpionMan => "Scorpio Hunter",
@@ -251,7 +251,7 @@ namespace MaskBound.UI
         public void Show()
         {
             gameObject.SetActive(true);
-            mySelection = 0;
+            mySelection = null;
             isConfirmed = false;
             UpdateSelectedText();
             UpdateButtonStates(new Dictionary<ulong, EnemyFamily>());
