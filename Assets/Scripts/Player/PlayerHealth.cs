@@ -19,18 +19,10 @@ public class PlayerHealth : NetworkBehaviour
         NetworkVariableReadPermission.Everyone, 
         NetworkVariableWritePermission.Server
     );
-
-    private EventInstance lowHealthInstance;
-
-    public override void OnNetworkSpawn()
+    void Start()
     {
-        // Initialize low health FMOD event
-        lowHealthInstance = AudioManager.instance.CreateInstance(FMODEvents.instance.playerLowHealth);
-
-        // 1. Find UI first
-        if (IsOwner)
-        {
-            GameObject hud = GameObject.FindWithTag("PlayerHUD");
+       GameObject hud = GameObject.FindWithTag("PlayerHUD");
+            Debug.Log("Hud" + hud); 
             if (hud != null)
             {
                 healthSlider = hud.GetComponentInChildren<Slider>();
@@ -41,10 +33,7 @@ public class PlayerHealth : NetworkBehaviour
                     healthSlider.maxValue = maxHealth;
                     healthSlider.minValue = 0;
                 }
-            }
-        }
-        
-        // 2. Server sets initial value BEFORE UI update
+            } 
         if (IsServer)
         {
             currentHealth.Value = maxHealth;
@@ -55,6 +44,21 @@ public class PlayerHealth : NetworkBehaviour
 
         // 4. Force immediate update with current value
         UpdateUI(0, currentHealth.Value);
+    }
+    private EventInstance lowHealthInstance;
+
+    public override void OnNetworkSpawn()
+    {
+        // Initialize low health FMOD event
+        lowHealthInstance = AudioManager.instance.CreateInstance(FMODEvents.instance.playerLowHealth);
+
+        // 1. Find UI first
+        
+            
+        
+        
+        // 2. Server sets initial value BEFORE UI update
+        
     }
 
     public override void OnNetworkDespawn()
@@ -69,6 +73,8 @@ public class PlayerHealth : NetworkBehaviour
         AudioManager.instance.PlayOneShot(FMODEvents.instance.playerHurt, transform.position);
 
         currentHealth.Value -= amount;
+
+        Debug.Log("PlayerHealth: TakeDamage() called" + amount);
 
         if (currentHealth.Value < maxHealth * 0.2f && currentHealth.Value > 0)
         {

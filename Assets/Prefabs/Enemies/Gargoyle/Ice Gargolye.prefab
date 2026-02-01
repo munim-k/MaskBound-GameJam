@@ -787,13 +787,13 @@ MonoBehaviour:
   ShowTopMostFoldoutHeaderGroup: 1
   damage: 10
   attackCooldown: 1
-  attackRange: 0.83
+  attackRange: 1.1
   impactDelay: 0.7
   animationDuration: 1.5
   playerLayer:
     serializedVersion: 2
     m_Bits: 256
-  attackPoint: {fileID: 0}
+  attackPoint: {fileID: 8247603753031134591}
   _animator: {fileID: 7760394871253249132}
 --- !u!114 &2214144873902906812
 MonoBehaviour:

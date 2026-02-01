@@ -29,8 +29,16 @@ public enum SpawnPointMode
 [DisallowMultipleComponent]
 public class EnemySpawner : NetworkBehaviour
 {
-    [Header("Spawn Points")] [Tooltip("Possible spawn locations inside the arena.")] [SerializeField]
-    private Transform[] spawnPoints;
+    [Header("Spawn Points")] 
+    [Tooltip("Possible spawn locations for each arena. Index 0 = Arena 0 (Start), Index 1 = Arena 1, etc.")] 
+    [SerializeField]
+    private ArenaSpawnPoints[] spawnPoints;
+
+    [Serializable]
+    public struct ArenaSpawnPoints
+    {
+        public Transform[] points;
+    }
 
     [Header("Enemy Prefabs (Networked)")]
     [Tooltip("Each prefab MUST have a NetworkObject and be registered in NetworkManager prefab list.")]
@@ -61,6 +69,13 @@ public class EnemySpawner : NetworkBehaviour
     public event Action<int, int> OnAliveCountChangedServer; // arenaIndex, alive
 
     public int CurrentArenaIndex { get; private set; } = -1;
+
+    private bool isArenaStarted = false;
+    private float minValue = 0f;
+    private float maxValue = 3f;
+    private float increaseRate = 0.05f;
+    private float decreaseRate = 0.33f;
+    private float currentValue = 0f;
 
     #region Inspector structs
 
@@ -247,6 +262,7 @@ public class EnemySpawner : NetworkBehaviour
             yield return new WaitForSeconds(arena.arenaIntroDelay);
 
         OnArenaStartedServer?.Invoke(arenaIndex);
+        isArenaStarted = true;
 
         if (arena.steps == null) yield break;
 
@@ -280,6 +296,7 @@ public class EnemySpawner : NetworkBehaviour
             yield return null;
         print("All enemies defeated in arena " + arenaIndex);
         OnArenaCompletedServer?.Invoke(arenaIndex);
+        isArenaStarted = false;
         for(int i=0;i<doors.Length;i++)
         {
             doors[i].OpenDoor(arenaIndex);
@@ -293,21 +310,35 @@ public class EnemySpawner : NetworkBehaviour
 
     private Transform PickSpawnPoint(Step step)
     {
+        // 1. Validate outer array (Arenas)
         if (spawnPoints == null || spawnPoints.Length == 0)
             return transform;
 
+        // 2. Select the correct spawn list for the current arena
+        // Fallback to arena 0 if index is out of range
+        int safeArenaIndex = (CurrentArenaIndex >= 0 && CurrentArenaIndex < spawnPoints.Length) 
+            ? CurrentArenaIndex 
+            : 0;
+
+        Transform[] currentArenaPoints = spawnPoints[safeArenaIndex].points;
+
+        // 3. Validate inner array (Points)
+        if (currentArenaPoints == null || currentArenaPoints.Length == 0)
+            return transform;
+
+        // 4. Pick point based on mode
         switch (step.spawnPointMode)
         {
             case SpawnPointMode.ByIndex:
-                return spawnPoints[Mathf.Clamp(step.spawnPointIndex, 0, spawnPoints.Length - 1)];
+                return currentArenaPoints[Mathf.Clamp(step.spawnPointIndex, 0, currentArenaPoints.Length - 1)];
 
             case SpawnPointMode.RoundRobin:
-                _roundRobinIndex = (_roundRobinIndex + 1) % spawnPoints.Length;
-                return spawnPoints[_roundRobinIndex];
+                _roundRobinIndex = (_roundRobinIndex + 1) % currentArenaPoints.Length;
+                return currentArenaPoints[_roundRobinIndex];
 
             case SpawnPointMode.Random:
             default:
-                return spawnPoints[UnityEngine.Random.Range(0, spawnPoints.Length)];
+                return currentArenaPoints[UnityEngine.Random.Range(0, currentArenaPoints.Length)];
         }
     }
 
@@ -389,6 +420,22 @@ public class EnemySpawner : NetworkBehaviour
             {
                 OnEnemyDespawnedServer?.Invoke(TrackedNetId);
             }
+        }
+    }
+
+    private void Update()
+    {
+        if(isArenaStarted)
+        {
+            currentValue += increaseRate * Time.deltaTime;
+            currentValue = Mathf.Clamp(currentValue, minValue, maxValue);
+            AudioManager.instance.SetMusicParameter("MusicDifficulty", currentValue);
+        }
+        else
+        {
+            currentValue -= decreaseRate * Time.deltaTime;
+            currentValue = Mathf.Clamp(currentValue, minValue, maxValue);
+            AudioManager.instance.SetMusicParameter("MusicDifficulty", currentValue);
         }
     }
 }
