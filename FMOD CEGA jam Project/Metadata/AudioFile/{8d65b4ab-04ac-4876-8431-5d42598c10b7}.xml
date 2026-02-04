@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<objects serializationModel="Studio.02.03.00">
+	<object class="AudioFile" id="{8d65b4ab-04ac-4876-8431-5d42598c10b7}">
+		<property name="assetPath">
+			<value>SFX/Player/Mask Swap.wav</value>
+		</property>
+		<property name="frequencyInKHz">
+			<value>44.0999985</value>
+		</property>
+		<property name="channelCount">
+			<value>2</value>
+		</property>
+		<property name="length">
+			<value>0.69841269841269837</value>
+		</property>
+		<relationship name="masterAssetFolder">
+			<destination>{81cc82cb-e168-423d-8236-efb53c4d495c}</destination>
+		</relationship>
+	</object>
+</objects>
