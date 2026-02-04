@@ -70,7 +70,6 @@ public class FluidThirdPersonController_OldInput : NetworkBehaviour
     [Header("Audio")]
     private EventInstance slideEvent;
 
-
     // runtime
     private CharacterController _cc;
 
