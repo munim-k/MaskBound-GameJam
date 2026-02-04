@@ -39,43 +39,32 @@ public class EnemyHealth : NetworkBehaviour
         currentHealth.OnValueChanged -= updateHealthUI;
     }
 
-    public void TakeDamage(float damage, bool isCritical)
+    public void TakeDamage(float damage)
     {
         if (!IsServer)
         {
-            updateHealthServerRpc(damage, isCritical);
+            updateHealthServerRpc(damage);
         }
         else
         {
-            ApplyDamage(damage, isCritical);
+            ApplyDamage(damage);
         }
     }
 
     [ServerRpc(RequireOwnership = false)]
-    private void updateHealthServerRpc(float damage, bool isCritical)
+    private void updateHealthServerRpc(float damage)
     {
-        ApplyDamage(damage, isCritical);
+        ApplyDamage(damage);
     }
 
-    private void ApplyDamage(float damage, bool isCritical)
+    private void ApplyDamage(float damage)
     {
         currentHealth.Value -= damage;
-
-        if(isCritical){
-            if(IsOwner)
-                AudioManager.instance.PlayOneShot(FMODEvents.instance.strongHit, transform.position);
-        } else {
-            if(IsOwner)
-                AudioManager.instance.PlayOneShot(FMODEvents.instance.weakHit, transform.position);
-        }
-
         if (currentHealth.Value <= 0)
         {
             Debug.Log("health now 0. triggering animation");
+            // Use NetworkObject.Despawn for networked objects instead of Destroy
             animator.SetTrigger("death");
-
-            if(IsOwner)
-                AudioManager.instance.PlayOneShot(GetComponent<EnemyFamilyReference>().GetDeathReference(), transform.position);
         }
     }
 

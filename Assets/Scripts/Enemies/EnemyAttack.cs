@@ -68,7 +68,7 @@ public class EnemyAttack : NetworkBehaviour
 
         // 2. Play Animation on ALL clients
         PlayAttackAnimClientRpc();
-        
+
         // 3. Wait for the "Impact" moment
         yield return new WaitForSeconds(impactDelay);
 

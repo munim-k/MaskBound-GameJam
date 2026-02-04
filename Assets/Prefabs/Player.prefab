@@ -31,6 +31,101 @@ Transform:
   m_Children: []
   m_Father: {fileID: 229740874562794423}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &70455562711834720
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2634590774301041835}
+  m_Layer: 8
+  m_Name: mixamorig:RightUpLeg
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2634590774301041835
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 70455562711834720}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0.000000021340176, y: 0.017407503, z: 0.9998485, w: -0.0000009318761}
+  m_LocalPosition: {x: 0.09688769, y: -0.05685142, z: -0.016886223}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 1860641945098558001}
+  m_Father: {fileID: 2164652006317200276}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &237285517539604154
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 5996594348885528225}
+  m_Layer: 8
+  m_Name: mixamorig:LeftHandPinky4
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &5996594348885528225
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 237285517539604154}
+  serializedVersion: 2
+  m_LocalRotation: {x: -5.551049e-16, y: 1.3986382e-17, z: 5.421011e-20, w: 1}
+  m_LocalPosition: {x: 5.3290704e-17, y: 0.02012997, z: -5.684342e-16}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 5032794793745496487}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &483056276361294364
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 687964698748955484}
+  m_Layer: 8
+  m_Name: mixamorig:LeftHandPinky2
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &687964698748955484
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 483056276361294364}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0.00000010325572, y: 4.19168e-10, z: -0.00000042884116, w: 1}
+  m_LocalPosition: {x: -5.3290704e-17, y: 0.029005121, z: 1.9895197e-15}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 5032794793745496487}
+  m_Father: {fileID: 1455641363503649134}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1033921092754182687
 GameObject:
   m_ObjectHideFlags: 0
@@ -53,11 +148,6 @@ GameObject:
   - component: {fileID: 6998603940307985225}
   - component: {fileID: 4802500729274607587}
   - component: {fileID: 4932299218167377670}
-  - component: {fileID: 7567000134666486270}
-  - component: {fileID: 3734938955393871191}
-  - component: {fileID: 6713848427973578940}
-  - component: {fileID: 306251201692638608}
-  - component: {fileID: 393596428813142269}
   m_Layer: 8
   m_Name: Player
   m_TagString: Player
@@ -80,7 +170,7 @@ Transform:
   m_Children:
   - {fileID: 3262098157382899668}
   - {fileID: 5827698352411964473}
-  - {fileID: 6088802277532926157}
+  - {fileID: 5934109658566488832}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &5984012762186277951
@@ -121,12 +211,15 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SwordAttack
   ShowTopMostFoldoutHeaderGroup: 1
-  animator: {fileID: 189126711064746679}
+  animator: {fileID: 3894774771419190546}
   attackAction: {fileID: 1120369429361536294, guid: 052faaac586de48259a63d0c4782560b, type: 3}
   attackSpeed: 1.5
   attackDuration: 0.46666667
   attackCooldown: 0.4
   attackDamage: 2
+  hitLayerMask:
+    serializedVersion: 2
+    m_Bits: 128
   attackPoint: {fileID: 5827698352411964473}
   attackRange: 1.1
   enemyLayers:
@@ -190,7 +283,8 @@ MonoBehaviour:
   ShowTopMostFoldoutHeaderGroup: 1
   cameraTarget: {fileID: 3262098157382899668}
   mainCamera: {fileID: 0}
-  animator: {fileID: 189126711064746679}
+  animator: {fileID: 3894774771419190546}
+  walkSpeed: 4
   sprintSpeed: 8
   acceleration: 18
   deceleration: 22
@@ -212,7 +306,7 @@ MonoBehaviour:
   slideHeightMultiplier: 0.55
   minSpeedToSlide: 4
   lockSlideDirection: 1
-  cameraAutoPanStrength: 0.042
+  cameraAutoPanStrength: 0.153
   cameraAutoPanSpeed: 12
   cameraPanMinInput: 0.15
   mouseSensitivity: 2
@@ -220,6 +314,8 @@ MonoBehaviour:
   bottomClamp: -30
   sprintKey: 304
   slideKey: 99
+  minStepRate: 1
+  maxStepRate: 4
 --- !u!114 &5020256842547662714
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -432,22 +528,8 @@ MonoBehaviour:
   ShowTopMostFoldoutHeaderGroup: 1
   NetworkAnimatorExpanded: 0
   AuthorityMode: 1
-  m_Animator: {fileID: 189126711064746679}
-  TransitionStateInfoList:
-  - IsCrossFadeExit: 0
-    Layer: 0
-    OriginatingState: 2081823275
-    DestinationState: 867364603
-    TransitionDuration: 0.25
-    TriggerNameHash: 125937960
-    TransitionIndex: 1
-  - IsCrossFadeExit: 0
-    Layer: 0
-    OriginatingState: 1748754976
-    DestinationState: 1364798825
-    TransitionDuration: 0.25
-    TriggerNameHash: 125937960
-    TransitionIndex: 1
+  m_Animator: {fileID: 3894774771419190546}
+  TransitionStateInfoList: []
   AnimatorParameterEntries:
     ParameterEntries:
     - name: isAttacking
@@ -462,10 +544,6 @@ MonoBehaviour:
       NameHash: -823668238
       Synchronize: 1
       ParameterType: 1
-    - name: Jump
-      NameHash: 125937960
-      Synchronize: 1
-      ParameterType: 9
   AnimatorParametersExpanded: 0
 --- !u!114 &4802500729274607587
 MonoBehaviour:
@@ -498,8 +576,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerMaskManager
   ShowTopMostFoldoutHeaderGroup: 1
-<<<<<<<<< Temporary merge branch 1
---- !u!114 &7406562978660993701
+--- !u!114 &7567000134666486270
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -514,6 +591,41 @@ MonoBehaviour:
   ShowTopMostFoldoutHeaderGroup: 1
 --- !u!114 &3734938955393871191
 MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1033921092754182687}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 58ecf109be130504091a36ef7c9f291d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MaskBound.Player.MaskVisuals
+  ShowTopMostFoldoutHeaderGroup: 1
+  fireMaskPrefab: {fileID: 7595863498646709058, guid: 732137305736f6442a435a64c38e7940, type: 3}
+  lightningMaskPrefab: {fileID: 7595863498646709058, guid: 3c4e3dc0d02471e41b2763fdc861fd49, type: 3}
+  earthMaskPrefab: {fileID: 7595863498646709058, guid: 34c70a68a3f18b84fa7ce719e17b98f4, type: 3}
+  maskLocalPosition: {x: -123, y: 1.3891, z: 0.1785}
+  maskLocalRotation: {x: 0, y: 0, z: 0}
+  maskLocalScale: 0.2
+--- !u!1 &3392023531766652604
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1455641363503649134}
+  m_Layer: 8
+  m_Name: mixamorig:LeftHandPinky1
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1455641363503649134
+Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -1354,7 +1466,6 @@ Transform:
   - {fileID: 5996594348885528225}
   m_Father: {fileID: 687964698748955484}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
->>>>>>>>> Temporary merge branch 2
 --- !u!1 &4395558326344460407
 GameObject:
   m_ObjectHideFlags: 0

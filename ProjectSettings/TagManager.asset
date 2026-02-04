@@ -6,9 +6,6 @@ TagManager:
   tags:
   - CinemachineTarget
   - PlayerHUD
-  - Orc
-  - Gargoyle
-  - Scorpion
   layers:
   - Default
   - TransparentFX

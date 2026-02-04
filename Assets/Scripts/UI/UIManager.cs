@@ -7,8 +7,7 @@ public class UIManager : NetworkBehaviour
     [Header("Panels")]
     [SerializeField] private GameObject gameStartPanel;
     [SerializeField] private GameObject uploadPicturePanel;
-    [SerializeField] private GameObject characterSelectionPanel;  // Character selection phase
-    [SerializeField] private GameObject enterGamePanel;   // Final ready screen
+    [SerializeField] private GameObject enterGamePanel;   // ✅ NEW (added, not replacing)
 
     [Header("Force Start (Host Only)")]
     [SerializeField] private GameObject forceStartButton;
@@ -35,9 +34,6 @@ public class UIManager : NetworkBehaviour
 
         if (startGameButton != null)
             startGameButton.SetActive(false);
-            
-        if (characterSelectionPanel != null)
-            characterSelectionPanel.SetActive(false);
             
         if (enterGamePanel != null)
             enterGamePanel.SetActive(false);
@@ -88,9 +84,6 @@ public class UIManager : NetworkBehaviour
 
     public void OnForceStartPressed()
     {
-        if(IsOwner)
-            AudioManager.instance.PlayOneShot(FMODEvents.instance.uiClick, Vector3.zero);
-        
         Debug.Log("FORCE START BUTTON CLICKED");
 
         if (!IsServer || uploadPhaseStarted)
@@ -108,7 +101,7 @@ public class UIManager : NetworkBehaviour
     // UPLOAD PHASE (UNCHANGED)
     // =========================
 
-    [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
+    [ServerRpc(RequireOwnership = false)]
     public void StartUploadPhaseServerRpc()
     {
         if (uploadPhaseStarted) return;
@@ -144,65 +137,34 @@ public class UIManager : NetworkBehaviour
 
         if (confirmedClients.Count == NetworkManager.Singleton.ConnectedClients.Count)
         {
-            // All faces ready - show character selection instead of enter game
-            ShowCharacterSelectionPanelClientRpc();
+            ShowEnterGamePanelClientRpc();
         }
-    }
-
-    [ClientRpc]
-    private void ShowCharacterSelectionPanelClientRpc()
-    {
-        uploadPicturePanel?.SetActive(false);
-        characterSelectionPanel?.SetActive(true);
-        
-        // Initialize clients on server (now that all have uploaded faces and connected)
-        if (IsServer)
-        {
-            var selectionManager = FindObjectOfType<MaskBound.UI.CharacterSelectionManager>();
-            selectionManager?.InitializeClients();
-        }
-        
-        // Notify the CharacterSelectionPanel to initialize
-        var panel = characterSelectionPanel?.GetComponent<MaskBound.UI.CharacterSelectionPanel>();
-        panel?.Show();
-        
-        Debug.Log("[UIManager] Showing character selection panel");
-    }
-
-    /// <summary>
-    /// Called by CharacterSelectionManager when all players confirm
-    /// </summary>
-    public void OnAllCharactersConfirmed()
-    {
-        ShowEnterGamePanelClientRpc();
     }
 
     [ClientRpc]
     private void ShowEnterGamePanelClientRpc()
     {
-        characterSelectionPanel?.SetActive(false);
+        uploadPicturePanel?.SetActive(false);
         enterGamePanel?.SetActive(true);
 
         if (startGameButton != null)
             startGameButton.SetActive(IsServer);
-            
-        Debug.Log("[UIManager] All characters confirmed - showing enter game panel");
     }
 
     // =========================
     // HOST START GAME (NEW)
     // =========================
 
-    // public void OnStartGamePressed()
-    // {
-    //     if (!IsServer)
-    //         return;
+    public void OnStartGamePressed()
+    {
+        if (!IsServer)
+            return;
 
-    //     NetworkManager.Singleton.SceneManager.LoadScene(
-    //         "Game",
-    //         UnityEngine.SceneManagement.LoadSceneMode.Single
-    //     );
-    // }
+        NetworkManager.Singleton.SceneManager.LoadScene(
+            "Game",
+            UnityEngine.SceneManagement.LoadSceneMode.Single
+        );
+    }
 
     // =========================
     // LOCAL UI HELPERS (UNCHANGED)
@@ -212,7 +174,6 @@ public class UIManager : NetworkBehaviour
     {
         gameStartPanel?.SetActive(true);
         uploadPicturePanel?.SetActive(false);
-        characterSelectionPanel?.SetActive(false);
         enterGamePanel?.SetActive(false);
     }
 
@@ -220,7 +181,6 @@ public class UIManager : NetworkBehaviour
     {
         gameStartPanel?.SetActive(false);
         uploadPicturePanel?.SetActive(true);
-        characterSelectionPanel?.SetActive(false);
         enterGamePanel?.SetActive(false);
     }
 }

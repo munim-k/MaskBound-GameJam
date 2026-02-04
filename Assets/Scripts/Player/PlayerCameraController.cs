@@ -1,7 +1,6 @@
 using Unity.Netcode;
 using UnityEngine;
 using Cinemachine;
-using FMODUnity;
 
 public class PlayerCameraController : NetworkBehaviour
 {
@@ -10,7 +9,7 @@ public class PlayerCameraController : NetworkBehaviour
     [SerializeField] private Transform playerLookAt;
 
     [Header("Audio")]
-    [SerializeField] private StudioListener audioListener;
+    [SerializeField] private AudioListener audioListener;
 
     private void Awake()
     {
@@ -19,7 +18,7 @@ public class PlayerCameraController : NetworkBehaviour
             freeLookCamera = FindObjectOfType<CinemachineFreeLook>();
 
         if (audioListener == null)
-            audioListener = Camera.main?.GetComponent<StudioListener>();
+            audioListener = Camera.main?.GetComponent<AudioListener>();
     }
 
     public override void OnNetworkSpawn()
@@ -42,7 +41,7 @@ public class PlayerCameraController : NetworkBehaviour
         freeLookCamera.Follow = playerLookAt;
         freeLookCamera.LookAt = playerLookAt;
 
-        // Ensure only one StudioListener is active
+        // Ensure only one AudioListener is active
         if (audioListener != null)
             audioListener.enabled = true;
 

@@ -78,7 +78,7 @@ public class MaskSwapPanelUITutorial : MonoBehaviour
     {
         if (PlayerMaskManager.Local != null)
         {
-            PlayerMaskManager.Local.SetMask(MaskType.Fire);
+            PlayerMaskManager.Local.SetMaskClientRpc(MaskType.Fire);
             Close();
         }
     }
@@ -87,7 +87,7 @@ public class MaskSwapPanelUITutorial : MonoBehaviour
     {
         if (PlayerMaskManager.Local != null)
         {
-            PlayerMaskManager.Local.SetMask(MaskType.Lightning);
+            PlayerMaskManager.Local.SetMaskClientRpc(MaskType.Lightning);
             Close();
         }
     }
@@ -96,7 +96,7 @@ public class MaskSwapPanelUITutorial : MonoBehaviour
     {
         if (PlayerMaskManager.Local != null)
         {
-            PlayerMaskManager.Local.SetMask(MaskType.Earth);
+            PlayerMaskManager.Local.SetMaskClientRpc(MaskType.Earth);
             Close();
         }
     }

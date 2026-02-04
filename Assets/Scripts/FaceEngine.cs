@@ -7,7 +7,6 @@ using System.Collections.Generic;
 using System.IO;
 using Dummiesman;
 using SFB;
-using UnityEngine.SceneManagement;
 
 public class FaceEngine : NetworkBehaviour
 {
@@ -21,10 +20,6 @@ public class FaceEngine : NetworkBehaviour
     [Header("SPAWN")]
     [SerializeField] private float targetFaceHeight = 0.25f;
     [SerializeField] private float faceDistanceFromCamera = 1.2f;
-    
-    [Header("GAME SCENE ATTACHMENT")]
-    [SerializeField] private Vector3 faceLocalPosition = new Vector3(0, 2f, 0.75f);
-    [SerializeField] private float faceLocalScale = 0.001f;
 
     [Header("TEST MODE")]
     [SerializeField] private GameObject facePrefab;
@@ -73,7 +68,6 @@ public class FaceEngine : NetworkBehaviour
 
     private void Awake()
     {
-        DontDestroyOnLoad(gameObject);
         confirmButton.gameObject.SetActive(false);
         captureButton.gameObject.SetActive(false);
 
@@ -85,109 +79,10 @@ public class FaceEngine : NetworkBehaviour
         confirmButton.onClick.AddListener(ConfirmImage);
     }
 
-    public override void OnNetworkSpawn()
+    private void Start()
     {
-        // Subscribe to network scene events (same timing as LocalSpawner)
-        if (NetworkManager.Singleton != null)
-        {
-            NetworkManager.Singleton.SceneManager.OnSceneEvent += OnSceneEvent;
-        }
+        loadingManager = Object.FindFirstObjectByType<LoadingManager>();
     }
-
-    private void OnDestroy()
-    {
-        if (NetworkManager.Singleton != null && NetworkManager.Singleton.SceneManager != null)
-        {
-            NetworkManager.Singleton.SceneManager.OnSceneEvent -= OnSceneEvent;
-        }
-    }
-
-    private void OnSceneEvent(SceneEvent sceneEvent)
-    {
-        // Wait for LoadEventCompleted (same as LocalSpawner)
-        // This ensures players are spawned BEFORE we try to attach faces
-        if (sceneEvent.SceneEventType == SceneEventType.LoadEventCompleted)
-        {
-            // Check if we're in the Game scene
-            if (UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == "Game")
-            {
-                Debug.Log("[FaceEngine] LoadEventCompleted in Game scene, attaching faces to players");
-                StartCoroutine(AttachFacesToPlayers());
-            }
-        }
-    }
-
-    private IEnumerator AttachFacesToPlayers()
-    {
-        // Small delay to ensure players are fully ready
-        yield return new WaitForSeconds(0.2f);
-
-        Debug.Log($"[FaceEngine] Attaching {spawnedFaces.Count} faces to players");
-
-        foreach (var kvp in spawnedFaces)
-        {
-            ulong clientId = kvp.Key;
-            GameObject face = kvp.Value;
-            if (face == null)
-            {
-                Debug.LogWarning($"[FaceEngine] Face is null for client {clientId}");
-                continue;
-            }
-
-            // Get the player GameObject for this client
-            if (!NetworkManager.Singleton.ConnectedClients.ContainsKey(clientId))
-            {
-                Debug.LogWarning($"[FaceEngine] No client found for {clientId}");
-                continue;
-            }
-
-            NetworkObject playerNetObj = NetworkManager.Singleton.ConnectedClients[clientId].PlayerObject;
-            if (playerNetObj == null)
-            {
-                Debug.LogError($"[FaceEngine] No PlayerObject for client {clientId} even after LoadEventCompleted!");
-                continue;
-            }
-
-            AttachFaceToPlayer(face, playerNetObj.gameObject, clientId);
-        }
-    }
-
-
-
-    private void AttachFaceToPlayer(GameObject face, GameObject player, ulong clientId)
-    {
-        Debug.Log($"[FaceEngine] Attaching face for client {clientId} to player {player.name}");
-
-        // Get the faceLocation component from the player
-        faceLocation faceLocationComp = player.GetComponent<faceLocation>();
-        if (faceLocationComp == null)
-        {
-            Debug.LogError($"[FaceEngine] Player {player.name} is missing faceLocation component!");
-            return;
-        }
-
-        GameObject faceParent = faceLocationComp.FaceParentObject;
-        if (faceParent == null)
-        {
-            Debug.LogError($"[FaceEngine] faceParentObject is null on player {player.name}!");
-            return;
-        }
-
-        // Parent face to the designated face parent object
-        face.transform.SetParent(faceParent.transform);
-        
-        // Set position and scale - zero offset, 0.001 scale
-        face.transform.localPosition = Vector3.zero;
-        face.transform.localRotation = Quaternion.identity;
-        face.transform.localScale = Vector3.one * 0.001f;
-        
-        Debug.Log($"[FaceEngine] ✅ Face attached to {faceParent.name}! LocalPos={face.transform.localPosition}, LocalScale={face.transform.localScale}");
-    }
-
-
-
-
-
 
     /* =========================
        CONFIRM
@@ -324,43 +219,29 @@ public class FaceEngine : NetworkBehaviour
         if (spawnedFaces.ContainsKey(ownerId))
             Destroy(spawnedFaces[ownerId]);
 
-        Debug.Log($"[FaceEngine] SpawnFace called for client {ownerId}");
-
-        // ✅ CRITICAL: Parent to FaceEngine so face persists through scene changes
-        face.transform.SetParent(transform);
-        Debug.Log($"[FaceEngine] Face parented to FaceEngine GameObject");
-
-        // Position relative to camera for lobby preview
         Camera cam = Camera.main;
-        if (cam != null)
+        if (cam == null)
         {
-            Vector3 basePos = cam.transform.position + cam.transform.forward * faceDistanceFromCamera;
-            face.transform.position = basePos + Vector3.right * (ownerId * 0.6f);
-            face.transform.rotation = Quaternion.LookRotation(face.transform.position - cam.transform.position);
-            face.transform.Rotate(0f, 180f, 0f);
-        }
-        else
-        {
-            Debug.LogWarning("[FaceEngine] No main camera, using default face position");
-            face.transform.localPosition = Vector3.zero;
-            face.transform.localRotation = Quaternion.identity;
+            Debug.LogError("Main Camera not found");
+            return;
         }
 
-        // Scale face appropriately
+        Vector3 basePos = cam.transform.position + cam.transform.forward * faceDistanceFromCamera;
+
+        // Simple spacing per player
+        face.transform.position = basePos + Vector3.right * (ownerId * 0.6f);
+        face.transform.rotation = Quaternion.LookRotation(face.transform.position - cam.transform.position);
+        face.transform.Rotate(0f, 180f, 0f);
+
         Renderer[] renderers = face.GetComponentsInChildren<Renderer>();
-        if (renderers.Length > 0)
-        {
-            Bounds bounds = renderers[0].bounds;
-            foreach (Renderer r in renderers)
-                bounds.Encapsulate(r.bounds);
+        Bounds bounds = renderers[0].bounds;
+        foreach (Renderer r in renderers)
+            bounds.Encapsulate(r.bounds);
 
-            float scale = targetFaceHeight / bounds.size.y;
-            face.transform.localScale = Vector3.one * scale;
-            Debug.Log($"[FaceEngine] Face scaled to {scale}");
-        }
+        float scale = targetFaceHeight / bounds.size.y;
+        face.transform.localScale = Vector3.one * scale;
 
         spawnedFaces[ownerId] = face;
-        Debug.Log($"[FaceEngine] Face stored in spawnedFaces dictionary for client {ownerId}");
 
         StartCoroutine(ApplyTextureNextFrame(face, texture));
     }
@@ -369,31 +250,12 @@ public class FaceEngine : NetworkBehaviour
     {
         yield return null;
 
-        // Try to find URP Lit first (better for faces), then Unlit, then Standard
-        Shader shader = Shader.Find("Universal Render Pipeline/Lit");
-        if (shader == null) shader = Shader.Find("Universal Render Pipeline/Unlit");
-        if (shader == null) shader = Shader.Find("Standard");
-
-        if (shader != null)
+        Shader shader = Shader.Find("Universal Render Pipeline/Unlit");
+        foreach (Renderer r in face.GetComponentsInChildren<Renderer>())
         {
-            foreach (Renderer r in face.GetComponentsInChildren<Renderer>())
-            {
-                Material m = new Material(shader);
-                
-                // Assign to both mainTexture (Legacy/Standard) and _BaseMap (URP property name)
-                m.mainTexture = texture; 
-                if (m.HasProperty("_BaseMap"))
-                {
-                    m.SetTexture("_BaseMap", texture);
-                    m.SetColor("_BaseColor", Color.white); // Ensure color doesn't tint it weirdly
-                }
-
-                r.material = m;
-            }
-        }
-        else
-        {
-            Debug.LogError("[FaceEngine] Could not find any suitable shader to apply face texture!");
+            Material m = new Material(shader);
+            m.mainTexture = texture;
+            r.material = m;
         }
     }
 

@@ -1,228 +1,71 @@
-Maskbound (MVP GDD)
+Maskbound
 
-Genre
-3-Player Co-op Action Combat / Arena-Based
-
-Platform
-PC
+Genre: 3-Player Co-op Action Combat / Wave-Based Arena
+Platform: PC
 
 Target Experience
-Fast-paced cooperative combat focused on teamwork, readability, and elemental counterplay. Players must coordinate roles, manage mask corruption, and react to mixed enemy threats in compact arenas. Mastery comes from communication, correct target prioritization, and timely mask swapping.
+Fast-paced co-op combat focused on maximizing team performance through player roles (affinity) and mask-based elemental counters. Mastery requires communication and active mask swapping.
 
 Core Pillars
+Dual Counter System: Player affinity counters enemy type; masks counter enemy element.
+Readable Combat: Enemy silhouette indicates type; VFX/color indicates element.
+Co-op Dependency: Coordination is essential for success.
+Wave Escalation: Increasing pressure and enemy complexity per wave.
 
-Dual Counter System
-Player affinity counters enemy family (type).
-Masks counter enemy element.
+Player & Affinity
+Three co-op players, each with a natural affinity providing passive bonuses (damage, stagger) against one of three enemy families: Trolls, Scorpion Men, Gargoyles. Affinity is always active.
 
-Readable Combat
-Enemy silhouettes indicate family.
-Enemy VFX and color indicate element.
-Damage output clearly reflects effectiveness.
+Masks System (3 Total)
+Masks must be rotated to prevent Corruption. After 30 seconds of continuous use, a mask deals damage-over-time to the wearer, forcing a swap. Swapping resets the timer.
 
-Co-op Dependency
-Players rely on each other for optimal damage, revives, and mask swaps.
-
-Arena Pressure
-Scripted enemy mixes increase threat through numbers, damage, and health.
-
-Players
-
-Player Count
-Exactly 3 players (co-op)
-
-Weapons & Roles
-
-Each player uses a distinct weapon type. Movesets are mechanically similar, but weapon behavior differs.
-
-Sword User
-Close-range melee
-Wide cleave hitbox
-Effective for crowd control at short range
-
-Shoulder Cannon User
-Long-range projectile attacks
-Single-target focused
-Effective for precision damage and flying enemies
-
-Spellcaster
-Ranged splash damage
-Small area-of-effect on impact
-Effective for grouped enemies and zone control
-
-Movement
-
-All players share the same movement abilities:
-Walk
-Sprint
-Jump
-Double Jump
-Slide
-
-Combat
-
-Simple attacks only (no light/heavy distinction)
-No combo trees or advanced inputs
-
-Affinity System
-
-Each player has a permanent affinity that provides passive bonuses (e.g., increased damage or stagger) against one enemy family.
-
-Enemy Families:
-Trolls
-Scorpion Men
-Gargoyles
-
-Affinity is always active and cannot be changed.
-
-Mask System
-
-Masks (3 Total)
-
-Mask
+Mask List
 Fire Mask
 Countered Element: Ice
-Effect: Increased damage vs Ice enemies
+Utility: Burn, cleanse slow
 
-Mask
 Lightning Mask
 Countered Element: Metal
-Effect: Increased damage vs Metal enemies
+Utility: Shock, armor break
 
-Mask
 Earth Mask
 Countered Element: Rock
-Effect: Increased damage vs Rock enemies
+Utility: Shatter, stagger
 
-Mask damage buff is active only while worn.
-Weapons visually change based on the equipped mask.
+Enemies
+Enemies combine one of three Families (Types) with one of three Elements (Variants).
 
-Corruption
+Types
+Trolls – Brute
+Scorpion Men – Skirmisher
+Gargoyles – Control
 
-Wearing a mask continuously builds Corruption.
-After 30 seconds, Corruption begins dealing linear damage over time to the wearer.
-Corruption damage can knock a player.
-Mask timer resets when switching masks.
+Elements
+Ice – Slow, weak to Fire
+Metal – Defense, weak to Lightning
+Rock – Poise, weak to Earth
 
-Corruption Feedback
+Combat System
+Efficiency is determined by the Dual Counter System:
+Correct Player Affinity + Correct Mask = Optimal Efficiency.
+Non-optimal combat is viable but slower and riskier.
 
-Mask visually cracks as corruption builds.
-Distinct audio warning plays when 5 seconds remain before damage begins.
+Mask Swapping – Request Swap System
+To maintain combat flow and consent, swapping is done via a request/accept UI system.
 
-Mask Swapping
+Player A requests a mask from Player B.
+Player B accepts or declines instantly.
+Successful swap is instant but initiates a 3–5 second cooldown for both.
+Swaps require explicit acceptance and are blocked during stun, grab, or downed states.
 
-Mask swapping is done via a request/accept UI system.
-Successful swaps are instant.
-After a swap, both players enter a 5-second mask switch cooldown.
-Swapping is blocked while stunned, grabbed, or knocked.
+Gameplay Loop
+Identify enemy types and elements.
+Communicate and coordinate roles and mask strategy.
+Swap masks as necessary due to enemy threats or Corruption.
+Engage and survive the wave.
+Recover, prepare, repeat.
 
-Enemy Design
-
-Enemies are defined by a combination of Family (Type) and Element (Variant).
-
-Enemy Families
-
-Trolls (Brute)
-High health
-Slow movement
-Deal heavy damage
-Intended to be handled later in the arena
-
-Scorpion Men (Skirmisher)
-Low health
-Fast movement
-Tail attacks apply poison
-Poison deals damage over time
-High-pressure harassment enemies
-
-Gargoyles (Control / Flying)
-Flying enemies
-Swoop attacks
-Force vertical awareness and ranged responses
-
-Enemy Elements
-
-Ice
-Applies slow
-Weak to Fire
-
-Metal
-High defense
-Weak to Lightning
-
-Rock
-High poise
-Weak to Earth
-
-Combat Efficiency & Damage Learning
-
-Optimal damage is achieved by combining:
-Correct player affinity (family counter)
-Correct mask (element counter)
-
-Non-optimal damage is viable but noticeably slower.
-
-Players learn counters organically through:
-Higher damage numbers when countering correctly
-Faster enemy kills
-Stronger hit feedback (visual and audio cues)
-
-No explicit tutorials are required; damage feedback teaches the system.
-
-Arena Structure
-
-Game is arena-based, not wave-based.
-Each arena contains scripted enemy spawns.
-
-Difficulty increases via:
-Enemy count
-Enemy family and element combinations
-Increased enemy health and damage
-
-Arena Completion
-
-An arena ends when all enemies are defeated.
-
-Between Arenas
-
-A short downtime area appears before every arena.
-A heal station is always available.
-
-Hazards
-
-Simple environmental hazards only.
-Spikes deal damage when touched.
-
-Downed & Revive System
-
-Knocked State
-Players do not die immediately.
-When health reaches zero, players are knocked.
-
-Reviving
-Any single player can revive a knocked teammate.
-Revive is timed: 10 seconds.
-Revives can be interrupted by enemy damage.
-Revived players return with low health.
-
-Failure Condition
-Game over occurs when all players are knocked simultaneously.
-
-Win Condition
-
-Successfully clear all arenas in the demo.
-
-Scope & Intent
-
-Jam-only MVP
-No progression, unlocks, or meta systems
-No long-term player upgrades
-
-Focused on demonstrating:
-Dual counter combat
-Mask swapping tension
-Co-op coordination
+Failure: All players downed.
+Success: Clear all waves or reach score threshold.
 
 Design Summary
-
-Maskbound is a 3-player cooperative arena combat game built around elemental masks, role identity, and readable enemy design. The MVP emphasizes moment-to-moment teamwork, risk management through corruption, and learning through combat feedback rather than tutorials. The experience is tightly scoped to deliver a clear and replayable demo.
+Maskbound is a wave-based co-op combat game defined by role identity and elemental mask strategy. Mastery requires synergizing player affinity and mask element against mixed enemy threats.

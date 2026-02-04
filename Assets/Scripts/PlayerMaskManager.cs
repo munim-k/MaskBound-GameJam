@@ -1,31 +1,14 @@
 using UnityEngine;
 using Unity.Netcode;
-using MaskBound.Player;
 
-/// <summary>
-/// Manages mask ownership and swapping for a single player.
-/// Server-authoritative with NetworkVariable synchronization.
-/// </summary>
 public class PlayerMaskManager : NetworkBehaviour
 {
-    // TODO: Remove this singleton pattern - use event system instead
     public static PlayerMaskManager Local;
 
-    private const float SWAP_COOLDOWN_DURATION = 5f;
+    [SerializeField] private MaskType currentMask;
+    public MaskType CurrentMask => currentMask;
 
-    // Server-authoritative mask ownership
-    private NetworkVariable<MaskType> currentMask = new NetworkVariable<MaskType>(
-        MaskType.Fire, // Default value
-        NetworkVariableReadPermission.Everyone,
-        NetworkVariableWritePermission.Server
-    );
-    
-    /// <summary>
-    /// Current mask owned by this player. Read-only access.
-    /// </summary>
-    public MaskType CurrentMask => currentMask.Value;
-
-    private ulong? pendingRequester = null;
+    private ulong? pendingRequester = null;  // ✅ FIXED: Use nullable to allow Client 0
     private bool hasMask = false;
 
     public override void OnNetworkSpawn()
@@ -33,16 +16,7 @@ public class PlayerMaskManager : NetworkBehaviour
         if (IsOwner)
             Local = this;
 
-        // Subscribe to mask changes for HUD updates
-        currentMask.OnValueChanged += HandleMaskChanged;
-        
-        // Force initial UI update
-        if (IsOwner && hasMask)
-        {
-            UpdateHUD(currentMask.Value);
-        }
-
-        // Server assigns initial masks
+        // Server assigns masks
         if (IsServer)
         {
             if (MaskAuthority.Instance == null)
@@ -52,16 +26,14 @@ public class PlayerMaskManager : NetworkBehaviour
             }
 
             MaskType assignedMask = MaskAuthority.Instance.AssignInitialMask(OwnerClientId);
-            currentMask.Value = assignedMask; // NetworkVariable auto-syncs to all clients
+            currentMask = assignedMask;
             hasMask = true;
 
             Debug.Log($"[PlayerMaskManager] Server assigned {assignedMask} to client {OwnerClientId}");
+            
+            // Notify all clients (including this one) of the initial mask
+            SetMaskClientRpc(assignedMask);
         }
-    }
-
-    public override void OnNetworkDespawn()
-    {
-        currentMask.OnValueChanged -= HandleMaskChanged;
     }
 
     // ===== REQUEST =====
@@ -72,33 +44,30 @@ public class PlayerMaskManager : NetworkBehaviour
     /// </summary>
     public void RequestMask(MaskType requestedMask)
     {
-        Debug.Log($"[PlayerMaskManager] 📞 RequestMask CALLED: Requested={requestedMask}, IsOwner={IsOwner}, currentMask={currentMask.Value}");
-        
         if (!IsOwner)
         {
             Debug.LogWarning("[PlayerMaskManager] RequestMask called on non-owner!");
             return;
         }
 
-        // Validation: Must have a mask (check NetworkVariable, not local bool)
-        if (currentMask.Value == 0)
-        {
-            Debug.LogWarning("[PlayerMaskManager] Cannot request mask - you don't have one yet!");
-            return;
-        }
-
         // Validation: Can't request own mask
-        if (currentMask.Value == requestedMask)
+        if (currentMask == requestedMask)
         {
             Debug.LogWarning($"[PlayerMaskManager] You already have {requestedMask}!");
             return;
         }
 
-        Debug.Log($"[PlayerMaskManager] ✅ SENDING RPC: {currentMask.Value} -> {requestedMask}");
+        if (!hasMask)
+        {
+            Debug.LogWarning("[PlayerMaskManager] Cannot request mask - you don't have one yet!");
+            return;
+        }
+
+        Debug.Log($"[PlayerMaskManager] Requesting swap: {currentMask} -> {requestedMask}");
         RequestMaskServerRpc(requestedMask);
     }
 
-    [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
+    [Rpc(SendTo.Server)]
     private void RequestMaskServerRpc(MaskType requestedMask, RpcParams rpcParams = default)
     {
         if (MaskAuthority.Instance == null)
@@ -107,10 +76,8 @@ public class PlayerMaskManager : NetworkBehaviour
             return;
         }
 
-        // Use RpcParams to get sender identity
-        ulong senderClientId = rpcParams.Receive.SenderClientId;
-        Debug.Log($"[PlayerMaskManager] Server received request from client {senderClientId} for {requestedMask}");
-        MaskAuthority.Instance.SendRequest(senderClientId, requestedMask);
+        Debug.Log($"[PlayerMaskManager] Server received request from client {rpcParams.Receive.SenderClientId} for {requestedMask}");
+        MaskAuthority.Instance.SendRequest(rpcParams.Receive.SenderClientId, requestedMask);
     }
 
     // ===== RECEIVE =====
@@ -122,28 +89,32 @@ public class PlayerMaskManager : NetworkBehaviour
     [Rpc(SendTo.Owner)]
     public void ReceiveMaskRequestClientRpc(ulong requesterClientId, MaskType requestedMask)
     {
-        if(IsOwner)
-            AudioManager.instance.PlayOneShot(FMODEvents.instance.requestReceive, transform.position);
-        
+        Debug.Log($"[PlayerMaskManager] >>>>>> ReceiveMaskRequestClientRpc ENTRY <<<<<<");
         Debug.Log($"[PlayerMaskManager] Received swap request from client {requesterClientId} for {requestedMask}");
+        Debug.Log($"[PlayerMaskManager] Current state: currentMask={currentMask}, pendingRequester (BEFORE)={pendingRequester}, IsOwner={IsOwner}");
         
         // Validation: Still own the requested mask?
-        if (currentMask.Value != requestedMask)
+        if (currentMask != requestedMask)
         {
-            Debug.LogWarning($"[PlayerMaskManager] Received request for {requestedMask} but I have {currentMask.Value}. Ignoring.");
+            Debug.LogWarning($"[PlayerMaskManager] Received request for {requestedMask} but I have {currentMask}. Ignoring.");
             return;
         }
 
+        Debug.Log($"[PlayerMaskManager] Setting pendingRequester from {pendingRequester} to {requesterClientId}");
         pendingRequester = requesterClientId;
+        Debug.Log($"[PlayerMaskManager] pendingRequester is now: {pendingRequester}");
         
         if (MaskRequestUI.Instance != null)
         {
+            Debug.Log($"[PlayerMaskManager] Calling MaskRequestUI.Instance.Show()");
             MaskRequestUI.Instance.Show();
         }
         else
         {
             Debug.LogError("[PlayerMaskManager] MaskRequestUI.Instance is null!");
         }
+        
+        Debug.Log($"[PlayerMaskManager] <<<<<< ReceiveMaskRequestClientRpc EXIT <<<<<<");
     }
 
     /// <summary>
@@ -151,47 +122,76 @@ public class PlayerMaskManager : NetworkBehaviour
     /// </summary>
     public void AcceptRequest()
     {
-        if (!IsOwner)
-        {
-            Debug.LogWarning("[PlayerMaskManager] AcceptRequest called on non-owner!");
-            return;
-        }
-
-        if (pendingRequester == null)
-        {
-            Debug.LogWarning("[PlayerMaskManager] No pending request to accept!");
-            return;
-        }
-
-        Debug.Log($"[PlayerMaskManager] Accepting swap request from client {pendingRequester.Value}");
-        AcceptRequestServerRpc(pendingRequester.Value);
+        Debug.Log($"[PlayerMaskManager] ========== AcceptRequest() CALLED ========== IsOwner={IsOwner}, ClientId={OwnerClientId}");
         
-        // Clear pending request
-        pendingRequester = null;
+        try
+        {
+            if (!IsOwner)
+            {
+                Debug.LogWarning("[PlayerMaskManager] AcceptRequest called on non-owner!");
+                return;
+            }
+
+            Debug.Log($"[PlayerMaskManager] IsOwner check passed. pendingRequester={pendingRequester}");
+
+            if (pendingRequester == null)  // ✅ FIXED: Check for null instead of 0
+            {
+                Debug.LogWarning("[PlayerMaskManager] No pending request to accept!");
+                return;
+            }
+
+            Debug.Log($"[PlayerMaskManager] CLIENT {OwnerClientId}: Accepting swap request from client {pendingRequester.Value}");
+            Debug.Log($"[PlayerMaskManager] CLIENT {OwnerClientId}: Calling AcceptRequestServerRpc({pendingRequester.Value})");
+            AcceptRequestServerRpc(pendingRequester.Value);  // ✅ FIXED: Use .Value
+            
+            // Clear pending request
+            pendingRequester = null;  // ✅ FIXED: Set to null instead of 0
+            Debug.Log($"[PlayerMaskManager] CLIENT {OwnerClientId}: Cleared pending requester");
+        }
+        catch (System.Exception e)
+        {
+            Debug.LogError($"[PlayerMaskManager] EXCEPTION in AcceptRequest: {e.Message}\n{e.StackTrace}");
+        }
     }
 
-    [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
-    private void AcceptRequestServerRpc(ulong requesterClientId, RpcParams rpcParams = default)
+    [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Owner)]
+    private void AcceptRequestServerRpc(ulong requesterClientId)
     {
+        Debug.Log($"[PlayerMaskManager] SERVER: AcceptRequestServerRpc called! Requester={requesterClientId}, Target(me)={OwnerClientId}");
+        
         if (MaskAuthority.Instance == null)
         {
             Debug.LogError("[PlayerMaskManager] MaskAuthority.Instance is null!");
             return;
         }
 
-        // Use RpcParams to get sender identity (the player accepting)
-        ulong targetClientId = rpcParams.Receive.SenderClientId;
-        Debug.Log($"[PlayerMaskManager] Server executing swap: Requester={requesterClientId}, Target={targetClientId}");
-        MaskAuthority.Instance.SwapMasks(requesterClientId, targetClientId);
+        Debug.Log($"[PlayerMaskManager] SERVER: Calling MaskAuthority.SwapMasks({requesterClientId}, {OwnerClientId})");
+        MaskAuthority.Instance.SwapMasks(requesterClientId, OwnerClientId);
+        Debug.Log($"[PlayerMaskManager] SERVER: SwapMasks call completed");
     }
 
-    // ===== PUBLIC API =====
+    // ===== APPLY =====
 
     /// <summary>
-    /// Event fired when this player's mask changes (on all clients)
-    /// Subscribe to this to react to mask changes
+    /// Server notifies all clients to update this player's mask.
+    /// Called after initial assignment or successful swap.
     /// </summary>
-    public event System.Action<MaskType, MaskType> OnMaskChanged;
+    [Rpc(SendTo.Everyone)]
+    public void SetMaskClientRpc(MaskType newMask)
+    {
+        MaskType oldMask = currentMask;
+        currentMask = newMask;
+        hasMask = true;
+
+        Debug.Log($"[PlayerMaskManager] Client received SetMask: {oldMask} -> {newMask} (IsOwner: {IsOwner}, ClientId: {OwnerClientId})");
+
+        // Update HUD only for local player
+        if (IsOwner && HUDMaskDisplay.Instance != null)
+        {
+            HUDMaskDisplay.Instance.Refresh(newMask);
+            Debug.Log($"[PlayerMaskManager] Updated HUD to show {newMask}");
+        }
+    }
 
     /// <summary>
     /// Returns whether this player currently has a mask assigned.
@@ -199,70 +199,5 @@ public class PlayerMaskManager : NetworkBehaviour
     public bool HasMask()
     {
         return hasMask;
-    }
-
-    /// <summary>
-    /// Server-only: Directly set this player's mask.
-    /// Used by MaskAuthority during swaps.
-    /// </summary>
-    /// <param name="newMask">The mask to assign</param>
-    public void SetMask(MaskType newMask)
-    {
-        if (!IsServer)
-        {
-            Debug.LogError("[PlayerMaskManager] SetMask can only be called on server!");
-            return;
-        }
-
-        Debug.Log($"[PlayerMaskManager] SERVER SETTING MASK: {currentMask.Value} -> {newMask} for client {OwnerClientId}");
-        currentMask.Value = newMask;
-        hasMask = true;
-        Debug.Log($"[PlayerMaskManager] Server set mask to {newMask} for client {OwnerClientId}");
-    }
-
-    /// <summary>
-    /// Internal: Invoke the mask changed event when NetworkVariable changes
-    /// </summary>
-    private void HandleMaskChanged(MaskType oldMask, MaskType newMask)
-    {
-        Debug.Log($"[PlayerMaskManager] Mask changed: {oldMask} -> {newMask} (Owner: {IsOwner})");
-        
-        // Invoke public event for external listeners (MaskVisuals, etc.)
-        OnMaskChanged?.Invoke(oldMask, newMask);
-        
-        if (IsOwner)
-        {
-            UpdateHUD(newMask);
-
-            AudioManager.instance.PlayOneShot(FMODEvents.instance.maskSwap, transform.position);
-            
-            // GDD: Reset corruption timer on mask swap
-            MaskCorruption corruption = GetComponent<MaskCorruption>();
-            if (corruption != null)
-            {
-                corruption.ResetCorruption();
-                Debug.Log("[PlayerMaskManager] Corruption timer reset due to mask swap");
-            }
-            else
-            {
-                Debug.LogWarning("[PlayerMaskManager] MaskCorruption component not found!");
-            }
-        }
-    }
-
-    /// <summary>
-    /// Updates the HUD to display the current mask.
-    /// </summary>
-    private void UpdateHUD(MaskType mask)
-    {
-        if (HUDMaskDisplay.Instance != null)
-        {
-            HUDMaskDisplay.Instance.Refresh(mask);
-            Debug.Log($"[PlayerMaskManager] Updated HUD to show {mask}");
-        }
-        else
-        {
-            Debug.LogWarning("[PlayerMaskManager] HUDMaskDisplay.Instance is null!");
-        }
     }
 }

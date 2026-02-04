@@ -76,43 +76,28 @@ public class MaskSwapPanelUI : MonoBehaviour
 
     public void RequestFire()
     {
-        Debug.Log("[MaskSwapPanelUI] 🔥 FIRE BUTTON CLICKED");
         if (PlayerMaskManager.Local != null)
         {
             PlayerMaskManager.Local.RequestMask(MaskType.Fire);
             Close();
         }
-        else
-        {
-            Debug.LogError("[MaskSwapPanelUI] PlayerMaskManager.Local is NULL!");
-        }
     }
 
     public void RequestLightning()
     {
-        Debug.Log("[MaskSwapPanelUI] ⚡ LIGHTNING BUTTON CLICKED");
         if (PlayerMaskManager.Local != null)
         {
             PlayerMaskManager.Local.RequestMask(MaskType.Lightning);
             Close();
         }
-        else
-        {
-            Debug.LogError("[MaskSwapPanelUI] PlayerMaskManager.Local is NULL!");
-        }
     }
 
     public void RequestEarth()
     {
-        Debug.Log("[MaskSwapPanelUI] 🌍 EARTH BUTTON CLICKED");
         if (PlayerMaskManager.Local != null)
         {
             PlayerMaskManager.Local.RequestMask(MaskType.Earth);
             Close();
-        }
-        else
-        {
-            Debug.LogError("[MaskSwapPanelUI] PlayerMaskManager.Local is NULL!");
         }
     }
 }

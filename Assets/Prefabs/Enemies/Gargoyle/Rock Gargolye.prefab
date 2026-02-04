@@ -703,11 +703,9 @@ GameObject:
   - component: {fileID: 3451411701426460258}
   - component: {fileID: 8443618010994270245}
   - component: {fileID: 4938004398733478818}
-  - component: {fileID: 2154665873238224424}
-  - component: {fileID: 7099799530244857739}
   m_Layer: 7
-  m_Name: Rock Gargoyle (Gargolye)
-  m_TagString: Gargoyle
+  m_Name: Rock Gargolye
+  m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -742,7 +740,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.NetworkObject
-  GlobalObjectIdHash: 47242404
+  GlobalObjectIdHash: 383246931
   InScenePlacedSourceGlobalObjectIdHash: 47242404
   DeferredDespawnTick: 0
   Ownership: 1
@@ -832,7 +830,7 @@ MonoBehaviour:
   ShowTopMostFoldoutHeaderGroup: 1
   damage: 10
   attackCooldown: 1
-  attackRange: 1.1
+  attackRange: 0.83
   impactDelay: 0.7
   animationDuration: 1.5
   playerLayer:
@@ -939,33 +937,6 @@ MonoBehaviour:
       Synchronize: 1
       ParameterType: 9
   AnimatorParametersExpanded: 0
---- !u!114 &2154665873238224424
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7994189637336163461}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 78bb4a54aa3036f438ce961ef29a12bd, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::MaskBound.Enemy.EnemyClassification
-  family: 2
-  element: 2
---- !u!114 &7099799530244857739
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7994189637336163461}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 25aad60917e58c34ea5302ff71422140, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::EnemyFamilyReference
-  familyAudioType: 1
 --- !u!1 &8738981600349694095
 GameObject:
   m_ObjectHideFlags: 0
@@ -1136,9 +1107,6 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: a79240d8d51a1074ba0b0af2f8c6451c, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1269569232596454307}
-    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: a79240d8d51a1074ba0b0af2f8c6451c, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 750930457668676350}
   m_SourcePrefab: {fileID: 100100000, guid: a79240d8d51a1074ba0b0af2f8c6451c, type: 3}
 --- !u!4 &58464780078391644 stripped
 Transform:
@@ -1246,18 +1214,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 445ddae2cf6a48b280704d589b671bb9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyAnimationRelay
---- !u!114 &750930457668676350
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1253431839347222640}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a00573ee5d05f3349893596285a35b23, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::GargoyleAttackAudio
 --- !u!4 &1318107884781282092 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 1148031354475001357, guid: a79240d8d51a1074ba0b0af2f8c6451c, type: 3}
