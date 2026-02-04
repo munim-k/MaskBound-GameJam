@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<objects serializationModel="Studio.02.03.00">
+	<object class="AudioFile" id="{068bcbd5-7d6a-441e-882a-fa08cd75fb0d}">
+		<property name="assetPath">
+			<value>SFX/Gargoyle/Gargoyle Flying 1.wav</value>
+		</property>
+		<property name="frequencyInKHz">
+			<value>44.0999985</value>
+		</property>
+		<property name="channelCount">
+			<value>2</value>
+		</property>
+		<property name="length">
+			<value>0.27748299319727893</value>
+		</property>
+		<relationship name="masterAssetFolder">
+			<destination>{81cc82cb-e168-423d-8236-efb53c4d495c}</destination>
+		</relationship>
+	</object>
+</objects>

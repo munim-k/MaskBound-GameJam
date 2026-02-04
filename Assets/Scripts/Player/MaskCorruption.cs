@@ -108,16 +108,27 @@ namespace MaskBound.Player
         {
             float damageThisFrame = corruptionDamagePerSecond * deltaTime;
             
-            // TODO: Apply damage to player health component
-            // For now, just log
-            Debug.Log($"[MaskCorruption] Dealing {damageThisFrame:F2} corruption damage (total: {(corruptionTimer.Value - corruptionGracePeriod) * corruptionDamagePerSecond:F1})");
+            // Apply damage to PlayerHealth component
+            var playerHealth = GetComponent<PlayerHealth>();
+            if (playerHealth == null)
+            {
+                Debug.LogError("[MaskCorruption] PlayerHealth component not found! Cannot apply corruption damage.");
+                return;
+            }
             
-            // In full implementation:
-            // var health = GetComponent<PlayerHealth>();
-            // if (health != null)
-            // {
-            //     health.TakeDamage(damageThisFrame, DamageType.Corruption, canKnock: canKnockPlayer);
-            // }
+            // Apply the damage
+            playerHealth.TakeDamage(damageThisFrame);
+            
+            float totalDamage = (corruptionTimer.Value - corruptionGracePeriod) * corruptionDamagePerSecond;
+            Debug.Log($"[MaskCorruption] Dealt {damageThisFrame:F2} corruption damage (total: {totalDamage:F1}, health: {playerHealth.currentHealth.Value:F1})");
+            
+            // Check if corruption should knock the player (GDD requirement)
+            if (canKnockPlayer && playerHealth.currentHealth.Value <= 0)
+            {
+                Debug.LogError($"[MaskCorruption] 💀 Player knocked by corruption damage!");
+                // Note: Actual knock state implementation depends on PlayerState component
+                // For now, the death is handled by PlayerHealth.Die()
+            }
         }
 
         /// <summary>

@@ -1,4 +1,5 @@
 using UnityEngine;
+using Unity.Netcode;
 using MaskBound.Core.Enums;
 
 namespace MaskBound.Core.Data
@@ -6,7 +7,7 @@ namespace MaskBound.Core.Data
     /// <summary>
     /// Information about a damage event
     /// </summary>
-    public struct DamageSource
+    public struct DamageSource : INetworkSerializable
     {
         /// <summary>
         /// Client ID of the attacker (if player)
@@ -42,6 +43,63 @@ namespace MaskBound.Core.Data
         /// Was this a critical hit?
         /// </summary>
         public bool IsCritical;
+
+        public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
+        {
+            // Serialize nullable ulong as bool + value
+            bool hasAttacker = AttackerClientId.HasValue;
+            serializer.SerializeValue(ref hasAttacker);
+            if (hasAttacker)
+            {
+                ulong attackerId = AttackerClientId ?? 0;
+                serializer.SerializeValue(ref attackerId);
+                AttackerClientId = attackerId;
+            }
+            else
+            {
+                AttackerClientId = null;
+            }
+
+            // Serialize enum as int
+            int damageTypeInt = (int)DamageType;
+            serializer.SerializeValue(ref damageTypeInt);
+            DamageType = (DamageType)damageTypeInt;
+
+            // Serialize vectors
+            serializer.SerializeValue(ref HitPoint);
+            serializer.SerializeValue(ref HitNormal);
+
+            // Serialize nullable MaskType
+            bool hasMask = AttackerMask.HasValue;
+            serializer.SerializeValue(ref hasMask);
+            if (hasMask)
+            {
+                int maskInt = (int)(AttackerMask ?? 0);
+                serializer.SerializeValue(ref maskInt);
+                AttackerMask = (MaskType)maskInt;
+            }
+            else
+            {
+                AttackerMask = null;
+            }
+
+            // Serialize nullable EnemyElement
+            bool hasElement = TargetElement.HasValue;
+            serializer.SerializeValue(ref hasElement);
+            if (hasElement)
+            {
+                int elementInt = (int)(TargetElement ?? 0);
+                serializer.SerializeValue(ref elementInt);
+                TargetElement = (EnemyElement)elementInt;
+            }
+            else
+            {
+                TargetElement = null;
+            }
+
+            // Serialize bool
+            serializer.SerializeValue(ref IsCritical);
+        }
     }
 
     /// <summary>
@@ -97,7 +155,7 @@ namespace MaskBound.Core.Data
     /// </summary>
     public struct EnemySpawnData
     {
-        public EnemyType Type;
+        public Enums.EnemyType Type;
         public EnemyElement Element;
         public Vector3 SpawnPosition;
         public Quaternion SpawnRotation;
