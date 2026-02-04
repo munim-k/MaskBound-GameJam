@@ -1,5 +1,7 @@
 ﻿using UnityEngine;
 using Unity.Netcode;
+using FMODUnity;
+using FMOD.Studio;
 
 /// <summary>
 /// OLD Input System version (Project Settings -> Input Manager).
@@ -65,6 +67,10 @@ public class FluidThirdPersonController_OldInput : NetworkBehaviour
     public KeyCode sprintKey = KeyCode.LeftShift;
     public KeyCode slideKey = KeyCode.LeftControl;
 
+    [Header("Audio")]
+    private EventInstance slideEvent;
+
+
     // runtime
     private CharacterController _cc;
 
@@ -82,6 +88,7 @@ public class FluidThirdPersonController_OldInput : NetworkBehaviour
     private float _targetPitch;
 
     private bool _grounded;
+    private bool _landAudioPlayed;
     private float _lastGroundedTime;
     private float _lastJumpPressedTime;
     private int _jumpsRemaining;
@@ -121,6 +128,13 @@ public class FluidThirdPersonController_OldInput : NetworkBehaviour
         }
 
         _jumpsRemaining = maxJumps;
+        
+        if(IsOwner)
+        {
+            slideEvent = AudioManager.instance.CreateInstance(FMODEvents.instance.playerSlide);
+            _landAudioPlayed = true;
+        }
+
     }
 
     private void Update()
@@ -195,6 +209,14 @@ public class FluidThirdPersonController_OldInput : NetworkBehaviour
 
         if (_grounded)
         {
+            if(!_landAudioPlayed)
+            {
+                if(IsOwner){
+                    AudioManager.instance.PlayOneShot(FMODEvents.instance.playerLand, transform.position);
+                    _landAudioPlayed = true;
+                }
+            }
+
             _lastGroundedTime = Time.time;
             _jumpsRemaining = maxJumps;
 
@@ -280,8 +302,12 @@ public class FluidThirdPersonController_OldInput : NetworkBehaviour
         if (_isSliding) StopSlide();
 
         if (animator != null) animator.SetTrigger(_animJump);
-        _verticalVelocity = Mathf.Sqrt(jumpHeight * -2f * gravity);
 
+        if(IsOwner){
+            AudioManager.instance.PlayOneShot(FMODEvents.instance.playerJump, transform.position);
+            _landAudioPlayed = false;
+        }
+        _verticalVelocity = Mathf.Sqrt(jumpHeight * -2f * gravity);
     }
 
     // --------------------
@@ -323,6 +349,16 @@ public class FluidThirdPersonController_OldInput : NetworkBehaviour
     private void StartSlide(float currentHorizSpeed)
     {
         _isSliding = true;
+
+        PLAYBACK_STATE slideState;
+        slideEvent.getPlaybackState(out slideState);
+        if (slideState != PLAYBACK_STATE.PLAYING && slideEvent.isValid())
+            slideEvent.start();
+        else if(slideEvent.isValid()){
+            slideEvent.stop(FMOD.Studio.STOP_MODE.IMMEDIATE); // restart
+            slideEvent.start();
+        }
+
         _slideTimer = slideDuration;
 
         Vector3 horizVel = new Vector3(_cc.velocity.x, 0f, _cc.velocity.z);
@@ -338,6 +374,9 @@ public class FluidThirdPersonController_OldInput : NetworkBehaviour
     private void StopSlide()
     {
         _isSliding = false;
+        if(slideEvent.isValid())
+            slideEvent.stop(FMOD.Studio.STOP_MODE.ALLOWFADEOUT);
+
         _cc.height = _originalHeight;
         _cc.center = _originalCenter;
     }
@@ -373,6 +412,7 @@ public class FluidThirdPersonController_OldInput : NetworkBehaviour
 
         cameraTarget.rotation = Quaternion.Euler(_targetPitch, _targetYaw, 0f);
     }
+
 
     private static float ClampPitch(float pitch, float min, float max)
     {

@@ -1,5 +1,7 @@
 using UnityEngine;
 using Unity.Netcode;
+using FMOD.Studio;
+using MaskBound.Enemy;
 
 [RequireComponent(typeof(CharacterController))]
 public class EnemyMove : NetworkBehaviour
@@ -20,14 +22,26 @@ public class EnemyMove : NetworkBehaviour
     
     [Header("Animation")]
     [SerializeField] private Animator animator;
+    private EventInstance walkInstance;
 
     public override void OnNetworkSpawn()
     {
+        Debug.Log("EnemyMove OnNetworkSpawn");
         controller = GetComponent<CharacterController>();
+
+        // Initialize FMOD walk event
+        if(IsOwner)
+            walkInstance = AudioManager.instance.CreateInstance(GetComponent<EnemyFamilyReference>().GetWalkReference());
+
+        if (GetComponent<EnemyFamilyReference>().familyAudioType == EnemyFamilyReference.FamilyAudioType.Gargoyle && walkInstance.isValid())
+        {
+            walkInstance.start();
+        }
     }
 
     // This is the public function your EnemyAttack script was looking for
     public Transform GetPlayerTransform() => player;
+
 
     void Update()
     {
@@ -81,11 +95,24 @@ public class EnemyMove : NetworkBehaviour
             Quaternion targetRotation = Quaternion.LookRotation(moveDir);
             transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, rotationSpeed * Time.deltaTime);
             
-            animator.SetBool("isWalking", true);
+             animator.SetBool("isWalking", true);
+
+            PLAYBACK_STATE playbackState;
+            walkInstance.getPlaybackState(out playbackState);
+            if (playbackState != PLAYBACK_STATE.PLAYING && walkInstance.isValid())
+            {
+                walkInstance.start();
+            }
         }
         else
         {
-            animator.SetBool("isWalking", false);
+            // animator.SetBool("isWalking", false);
+            PLAYBACK_STATE playbackState;
+            walkInstance.getPlaybackState(out playbackState);
+            if (playbackState == PLAYBACK_STATE.PLAYING && GetComponent<EnemyFamilyReference>().familyAudioType != EnemyFamilyReference.FamilyAudioType.Gargoyle && walkInstance.isValid())
+            {
+                walkInstance.stop(FMOD.Studio.STOP_MODE.ALLOWFADEOUT);
+            }
         }
     }
 

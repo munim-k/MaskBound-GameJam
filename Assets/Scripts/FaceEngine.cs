@@ -158,15 +158,30 @@ public class FaceEngine : NetworkBehaviour
     {
         Debug.Log($"[FaceEngine] Attaching face for client {clientId} to player {player.name}");
 
-        // Parent face to player
-        face.transform.SetParent(player.transform);
+        // Get the faceLocation component from the player
+        faceLocation faceLocationComp = player.GetComponent<faceLocation>();
+        if (faceLocationComp == null)
+        {
+            Debug.LogError($"[FaceEngine] Player {player.name} is missing faceLocation component!");
+            return;
+        }
+
+        GameObject faceParent = faceLocationComp.FaceParentObject;
+        if (faceParent == null)
+        {
+            Debug.LogError($"[FaceEngine] faceParentObject is null on player {player.name}!");
+            return;
+        }
+
+        // Parent face to the designated face parent object
+        face.transform.SetParent(faceParent.transform);
         
-        // Set position and scale from Inspector values
-        face.transform.localPosition = faceLocalPosition;
+        // Set position and scale - zero offset, 0.001 scale
+        face.transform.localPosition = Vector3.zero;
         face.transform.localRotation = Quaternion.identity;
-        face.transform.localScale = Vector3.one * faceLocalScale;
+        face.transform.localScale = Vector3.one * 0.001f;
         
-        Debug.Log($"[FaceEngine] ✅ Face attached! LocalPos={face.transform.localPosition}");
+        Debug.Log($"[FaceEngine] ✅ Face attached to {faceParent.name}! LocalPos={face.transform.localPosition}, LocalScale={face.transform.localScale}");
     }
 
 
@@ -354,12 +369,31 @@ public class FaceEngine : NetworkBehaviour
     {
         yield return null;
 
-        Shader shader = Shader.Find("Universal Render Pipeline/Unlit");
-        foreach (Renderer r in face.GetComponentsInChildren<Renderer>())
+        // Try to find URP Lit first (better for faces), then Unlit, then Standard
+        Shader shader = Shader.Find("Universal Render Pipeline/Lit");
+        if (shader == null) shader = Shader.Find("Universal Render Pipeline/Unlit");
+        if (shader == null) shader = Shader.Find("Standard");
+
+        if (shader != null)
         {
-            Material m = new Material(shader);
-            m.mainTexture = texture;
-            r.material = m;
+            foreach (Renderer r in face.GetComponentsInChildren<Renderer>())
+            {
+                Material m = new Material(shader);
+                
+                // Assign to both mainTexture (Legacy/Standard) and _BaseMap (URP property name)
+                m.mainTexture = texture; 
+                if (m.HasProperty("_BaseMap"))
+                {
+                    m.SetTexture("_BaseMap", texture);
+                    m.SetColor("_BaseColor", Color.white); // Ensure color doesn't tint it weirdly
+                }
+
+                r.material = m;
+            }
+        }
+        else
+        {
+            Debug.LogError("[FaceEngine] Could not find any suitable shader to apply face texture!");
         }
     }
 
