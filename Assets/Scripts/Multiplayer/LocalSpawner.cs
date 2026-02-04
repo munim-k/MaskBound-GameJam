@@ -29,30 +29,57 @@ public class LocalSpawner : NetworkBehaviour
 
     public override void OnNetworkSpawn()
     {
-        if (!IsServer) return;
-
-        if (!HasValidSpawnPoints())
+        Debug.Log($"━━━━ [LocalSpawner] OnNetworkSpawn START ━━━━");
+        Debug.Log($"[LocalSpawner] IsServer={IsServer}, IsClient={IsClient}, IsHost={IsHost}");
+        
+        if (!IsServer)
         {
-            Debug.LogError("LocalSpawner missing spawn locations; cannot spawn players.");
+            Debug.Log($"[LocalSpawner] Not server, exiting OnNetworkSpawn");
             return;
         }
 
-        Debug.Log("LocalSpawner initialized on Server");
-
-        // Spawn existing connections (host + any late joiners pre-start)
-        foreach (var client in NetworkManager.Singleton.ConnectedClientsList)
+        if (!HasValidSpawnPoints())
         {
-            SpawnPlayerForClient(client.ClientId);
+            Debug.LogError("[LocalSpawner] Missing spawn locations; cannot spawn players.");
+            return;
         }
 
+        Debug.Log("[LocalSpawner] Initialized on Server");
+
+        // Subscribe to scene events to know when scene load is complete
+        NetworkManager.SceneManager.OnSceneEvent += OnSceneEvent;
+        
+        // Also subscribe to connection callbacks for late joiners
         NetworkManager.Singleton.OnClientConnectedCallback += OnClientConnected;
         NetworkManager.Singleton.OnClientDisconnectCallback += OnClientDisconnected;
+        
+        Debug.Log($"━━━━ [LocalSpawner] OnNetworkSpawn END ━━━━");
+    }
+
+    private void OnSceneEvent(SceneEvent sceneEvent)
+    {
+        // Only spawn when scene load is COMPLETE (all clients ready)
+        if (sceneEvent.SceneEventType == SceneEventType.LoadEventCompleted)
+        {
+            Debug.Log($"[LocalSpawner] Scene load completed, spawning players now");
+            
+            int connectedCount = NetworkManager.Singleton.ConnectedClients.Count;
+            Debug.Log($"[LocalSpawner] Connected clients count: {connectedCount}");
+
+            // Spawn for all connected clients
+            foreach (var client in NetworkManager.Singleton.ConnectedClientsList)
+            {
+                Debug.Log($"[LocalSpawner] → Spawning player for ClientId={client.ClientId}");
+                SpawnPlayerForClient(client.ClientId);
+            }
+        }
     }
 
     public override void OnNetworkDespawn()
     {
         if (IsServer && NetworkManager.Singleton != null)
         {
+            NetworkManager.SceneManager.OnSceneEvent -= OnSceneEvent;
             NetworkManager.Singleton.OnClientConnectedCallback -= OnClientConnected;
             NetworkManager.Singleton.OnClientDisconnectCallback -= OnClientDisconnected;
         }
@@ -76,22 +103,29 @@ public class LocalSpawner : NetworkBehaviour
 
     private void SpawnPlayerForClient(ulong clientId)
     {
-        if (!IsServer) return;
+        Debug.Log($"[SpawnPlayer] START for ClientId={clientId}");
+        
+        if (!IsServer)
+        {
+            Debug.LogWarning($"[SpawnPlayer] Not server, aborting");
+            return;
+        }
+        
         if (playerPrefab == null)
         {
-            Debug.LogError("Player prefab is not assigned!");
+            Debug.LogError("[SpawnPlayer] Player prefab is not assigned!");
             return;
         }
 
         if (!HasValidSpawnPoints())
         {
-            Debug.LogError("No spawn locations assigned!");
+            Debug.LogError("[SpawnPlayer] No spawn locations assigned!");
             return;
         }
 
         if (spawnedPlayers.ContainsKey(clientId))
         {
-            Debug.LogWarning($"Player for client {clientId} already exists!");
+            Debug.LogWarning($"[SpawnPlayer] Player for client {clientId} already exists!");
             return;
         }
 
@@ -99,26 +133,32 @@ public class LocalSpawner : NetworkBehaviour
         Transform spawnLocation = GetNextSpawnLocation();
         Vector3 spawnPosition = spawnLocation.position;
         Quaternion spawnRotation = spawnLocation.rotation;
+        Debug.Log($"[SpawnPlayer] Spawn position: {spawnPosition}, rotation: {spawnRotation}");
 
         // Instantiate player prefab
         GameObject playerInstance = Instantiate(playerPrefab, spawnPosition, spawnRotation);
+        Debug.Log($"[SpawnPlayer] Instantiated GameObject: {playerInstance.name}");
 
         // Get NetworkObject and spawn with ownership
         NetworkObject networkObject = playerInstance.GetComponent<NetworkObject>();
         if (networkObject != null)
         {
+            Debug.Log($"[SpawnPlayer] Found NetworkObject, calling SpawnAsPlayerObject for ClientId={clientId}");
+            
             // networkObject.SpawnWithOwnership(clientId);
             networkObject.SpawnAsPlayerObject(clientId, true);
+            
             Debug.Log($"[Spawner] client={clientId} PlayerObjectNull={NetworkManager.Singleton.ConnectedClients[clientId].PlayerObject==null}");
+            Debug.Log($"[SpawnPlayer] NetworkObject spawned! IsSpawned={networkObject.IsSpawned}, OwnerClientId={networkObject.OwnerClientId}");
 
             spawnedPlayers[clientId] = playerInstance;
 
             if (debugMode)
-                Debug.Log($"Player spawned for client {clientId} at {spawnPosition}");
+                Debug.Log($"[SpawnPlayer] ✅ COMPLETE for ClientId={clientId} at {spawnPosition}");
         }
         else
         {
-            Debug.LogError("Player prefab must have a NetworkObject component!");
+            Debug.LogError("[SpawnPlayer] Player prefab must have a NetworkObject component!");
             Destroy(playerInstance);
         }
     }

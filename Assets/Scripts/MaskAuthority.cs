@@ -240,21 +240,17 @@ public class MaskAuthority : NetworkBehaviour
             return;
         }
 
-        // Perform atomic swap
+        // Perform atomic swap in ownership dictionary
         maskOwners[requesterMask.Value] = targetClientId;
         maskOwners[targetMask.Value] = requesterClientId;
 
         Debug.Log($"[MaskAuthority] SWAP COMPLETE: Client {requesterClientId} ({requesterMask} -> {targetMask}) <-> Client {targetClientId} ({targetMask} -> {requesterMask})");
-        Debug.Log($"[MaskAuthority] Updated ownership: {requesterMask}->Client{targetClientId}, {targetMask}->Client{requesterClientId}");
 
-        // Update both clients
-        Debug.Log($"[MaskAuthority] Calling SetMaskClientRpc({targetMask}) on requester's manager (Client {requesterClientId})");
-        requesterManager.SetMaskClientRpc(targetMask.Value);
+        // Update NetworkVariables directly (auto-syncs to all clients)
+        requesterManager.SetMask(targetMask.Value);
+        targetManager.SetMask(requesterMask.Value);
         
-        Debug.Log($"[MaskAuthority] Calling SetMaskClientRpc({requesterMask}) on target's manager (Client {targetClientId})");
-        targetManager.SetMaskClientRpc(requesterMask.Value);
-        
-        Debug.Log($"[MaskAuthority] Both ClientRPCs sent successfully");
+        Debug.Log($"[MaskAuthority] Both players' masks updated via NetworkVariable");
     }
 
     /// <summary>

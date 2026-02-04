@@ -2537,7 +2537,6 @@ GameObject:
   - component: {fileID: 1728152917}
   - component: {fileID: 1728152916}
   - component: {fileID: 1728152921}
-  - component: {fileID: 1728152920}
   - component: {fileID: 1728152922}
   m_Layer: 5
   m_Name: UI
@@ -2632,35 +2631,6 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0, y: 0}
---- !u!114 &1728152920
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1728152915}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f3823ccf187da124f8fa6cd1f8cbe065, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::FaceEngine
-  ShowTopMostFoldoutHeaderGroup: 1
-  testMode: 0
-  targetFaceHeight: 1.5
-  faceDistanceFromCamera: 1.2
-  facePrefab: {fileID: 919132149155446097, guid: 7f5da4b7630d3384cb2ef9ce375c5ae8, type: 3}
-  faceTexture: {fileID: 2800000, guid: 28dd8c8f8766f214eb4265a8d85da4e2, type: 3}
-  uploadPanel: {fileID: 1239735065}
-  mainPanel: {fileID: 683906635}
-  previewImage: {fileID: 21411167}
-  loadingManager: {fileID: 0}
-  openPanelButton: {fileID: 74528557}
-  closePanelButton: {fileID: 1926999572}
-  uploadFileButton: {fileID: 1728883634}
-  takePictureButton: {fileID: 1139580216}
-  captureButton: {fileID: 936599283}
-  confirmButton: {fileID: 1045007060}
-  uploadUrl: https://nonperverted-deirdre-laboringly.ngrok-free.dev/fit
 --- !u!114 &1728152921
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2863,7 +2833,7 @@ MonoBehaviour:
   Ownership: 1
   AlwaysReplicateAsRoot: 0
   SynchronizeTransform: 1
-  ActiveSceneSynchronization: 0
+  ActiveSceneSynchronization: 1
   SceneMigrationSynchronization: 0
   SpawnWithObservers: 1
   DontDestroyWithOwner: 0
@@ -2886,6 +2856,7 @@ MonoBehaviour:
   minPlayers: 2
   maxPlayers: 3
   matchmakingTimeout: 50
+  gameSceneName: Game
   timeoutSceneName: MainMenu
   textBox: {fileID: 0}
   timerText: {fileID: 0}
@@ -3009,7 +2980,7 @@ PrefabInstance:
     - target: {fileID: 1157247666219447174, guid: 5751b7cd3808cea42b430ce728e66943, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
-      objectReference: {fileID: 1728152922}
+      objectReference: {fileID: 1791542027}
     - target: {fileID: 1157247666219447174, guid: 5751b7cd3808cea42b430ce728e66943, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_CallState
       value: 2
@@ -3020,7 +2991,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1157247666219447174, guid: 5751b7cd3808cea42b430ce728e66943, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_TargetAssemblyTypeName
-      value: UIManager, Assembly-CSharp
+      value: NetworkSpawner, Assembly-CSharp
       objectReference: {fileID: 0}
     - target: {fileID: 1157247666219447174, guid: 5751b7cd3808cea42b430ce728e66943, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Arguments.m_ObjectArgumentAssemblyTypeName
@@ -3549,6 +3520,94 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!1 &1944635420
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1944635421}
+  - component: {fileID: 1944635422}
+  - component: {fileID: 1944635423}
+  m_Layer: 0
+  m_Name: FaceEngine
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1944635421
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1944635420}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1944635422
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1944635420}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.NetworkObject
+  GlobalObjectIdHash: 3604400693
+  InScenePlacedSourceGlobalObjectIdHash: 0
+  DeferredDespawnTick: 0
+  Ownership: 1
+  AlwaysReplicateAsRoot: 0
+  SynchronizeTransform: 1
+  ActiveSceneSynchronization: 0
+  SceneMigrationSynchronization: 0
+  SpawnWithObservers: 1
+  DontDestroyWithOwner: 0
+  AutoObjectParentSync: 1
+  SyncOwnerTransformWhenParented: 1
+  AllowOwnerToParent: 0
+--- !u!114 &1944635423
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1944635420}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f3823ccf187da124f8fa6cd1f8cbe065, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FaceEngine
+  ShowTopMostFoldoutHeaderGroup: 1
+  testMode: 0
+  targetFaceHeight: 1.5
+  faceDistanceFromCamera: 1.2
+  faceLocalPosition: {x: 0, y: 1.45, z: 0.25}
+  faceLocalScale: 0.001
+  facePrefab: {fileID: 919132149155446097, guid: 7f5da4b7630d3384cb2ef9ce375c5ae8, type: 3}
+  faceTexture: {fileID: 2800000, guid: 28dd8c8f8766f214eb4265a8d85da4e2, type: 3}
+  uploadPanel: {fileID: 1239735065}
+  mainPanel: {fileID: 683906635}
+  previewImage: {fileID: 21411167}
+  openPanelButton: {fileID: 74528557}
+  closePanelButton: {fileID: 1926999572}
+  uploadFileButton: {fileID: 1728883634}
+  takePictureButton: {fileID: 1139580216}
+  captureButton: {fileID: 936599283}
+  confirmButton: {fileID: 1045007060}
+  uploadUrl: https://nonperverted-deirdre-laboringly.ngrok-free.dev/fit
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
@@ -3564,3 +3623,4 @@ SceneRoots:
   - {fileID: 818974221}
   - {fileID: 1473582325}
   - {fileID: 852405791}
+  - {fileID: 1944635421}

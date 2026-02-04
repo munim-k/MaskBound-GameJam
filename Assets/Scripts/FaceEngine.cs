@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.IO;
 using Dummiesman;
 using SFB;
+using UnityEngine.SceneManagement;
 
 public class FaceEngine : NetworkBehaviour
 {
@@ -20,6 +21,10 @@ public class FaceEngine : NetworkBehaviour
     [Header("SPAWN")]
     [SerializeField] private float targetFaceHeight = 0.25f;
     [SerializeField] private float faceDistanceFromCamera = 1.2f;
+    
+    [Header("GAME SCENE ATTACHMENT")]
+    [SerializeField] private Vector3 faceLocalPosition = new Vector3(0, 2f, 0.75f);
+    [SerializeField] private float faceLocalScale = 0.001f;
 
     [Header("TEST MODE")]
     [SerializeField] private GameObject facePrefab;
@@ -68,6 +73,7 @@ public class FaceEngine : NetworkBehaviour
 
     private void Awake()
     {
+        DontDestroyOnLoad(gameObject);
         confirmButton.gameObject.SetActive(false);
         captureButton.gameObject.SetActive(false);
 
@@ -79,10 +85,94 @@ public class FaceEngine : NetworkBehaviour
         confirmButton.onClick.AddListener(ConfirmImage);
     }
 
-    private void Start()
+    public override void OnNetworkSpawn()
     {
-        loadingManager = Object.FindFirstObjectByType<LoadingManager>();
+        // Subscribe to network scene events (same timing as LocalSpawner)
+        if (NetworkManager.Singleton != null)
+        {
+            NetworkManager.Singleton.SceneManager.OnSceneEvent += OnSceneEvent;
+        }
     }
+
+    private void OnDestroy()
+    {
+        if (NetworkManager.Singleton != null && NetworkManager.Singleton.SceneManager != null)
+        {
+            NetworkManager.Singleton.SceneManager.OnSceneEvent -= OnSceneEvent;
+        }
+    }
+
+    private void OnSceneEvent(SceneEvent sceneEvent)
+    {
+        // Wait for LoadEventCompleted (same as LocalSpawner)
+        // This ensures players are spawned BEFORE we try to attach faces
+        if (sceneEvent.SceneEventType == SceneEventType.LoadEventCompleted)
+        {
+            // Check if we're in the Game scene
+            if (UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == "Game")
+            {
+                Debug.Log("[FaceEngine] LoadEventCompleted in Game scene, attaching faces to players");
+                StartCoroutine(AttachFacesToPlayers());
+            }
+        }
+    }
+
+    private IEnumerator AttachFacesToPlayers()
+    {
+        // Small delay to ensure players are fully ready
+        yield return new WaitForSeconds(0.2f);
+
+        Debug.Log($"[FaceEngine] Attaching {spawnedFaces.Count} faces to players");
+
+        foreach (var kvp in spawnedFaces)
+        {
+            ulong clientId = kvp.Key;
+            GameObject face = kvp.Value;
+            if (face == null)
+            {
+                Debug.LogWarning($"[FaceEngine] Face is null for client {clientId}");
+                continue;
+            }
+
+            // Get the player GameObject for this client
+            if (!NetworkManager.Singleton.ConnectedClients.ContainsKey(clientId))
+            {
+                Debug.LogWarning($"[FaceEngine] No client found for {clientId}");
+                continue;
+            }
+
+            NetworkObject playerNetObj = NetworkManager.Singleton.ConnectedClients[clientId].PlayerObject;
+            if (playerNetObj == null)
+            {
+                Debug.LogError($"[FaceEngine] No PlayerObject for client {clientId} even after LoadEventCompleted!");
+                continue;
+            }
+
+            AttachFaceToPlayer(face, playerNetObj.gameObject, clientId);
+        }
+    }
+
+
+
+    private void AttachFaceToPlayer(GameObject face, GameObject player, ulong clientId)
+    {
+        Debug.Log($"[FaceEngine] Attaching face for client {clientId} to player {player.name}");
+
+        // Parent face to player
+        face.transform.SetParent(player.transform);
+        
+        // Set position and scale from Inspector values
+        face.transform.localPosition = faceLocalPosition;
+        face.transform.localRotation = Quaternion.identity;
+        face.transform.localScale = Vector3.one * faceLocalScale;
+        
+        Debug.Log($"[FaceEngine] ✅ Face attached! LocalPos={face.transform.localPosition}");
+    }
+
+
+
+
+
 
     /* =========================
        CONFIRM
@@ -219,29 +309,43 @@ public class FaceEngine : NetworkBehaviour
         if (spawnedFaces.ContainsKey(ownerId))
             Destroy(spawnedFaces[ownerId]);
 
+        Debug.Log($"[FaceEngine] SpawnFace called for client {ownerId}");
+
+        // ✅ CRITICAL: Parent to FaceEngine so face persists through scene changes
+        face.transform.SetParent(transform);
+        Debug.Log($"[FaceEngine] Face parented to FaceEngine GameObject");
+
+        // Position relative to camera for lobby preview
         Camera cam = Camera.main;
-        if (cam == null)
+        if (cam != null)
         {
-            Debug.LogError("Main Camera not found");
-            return;
+            Vector3 basePos = cam.transform.position + cam.transform.forward * faceDistanceFromCamera;
+            face.transform.position = basePos + Vector3.right * (ownerId * 0.6f);
+            face.transform.rotation = Quaternion.LookRotation(face.transform.position - cam.transform.position);
+            face.transform.Rotate(0f, 180f, 0f);
+        }
+        else
+        {
+            Debug.LogWarning("[FaceEngine] No main camera, using default face position");
+            face.transform.localPosition = Vector3.zero;
+            face.transform.localRotation = Quaternion.identity;
         }
 
-        Vector3 basePos = cam.transform.position + cam.transform.forward * faceDistanceFromCamera;
-
-        // Simple spacing per player
-        face.transform.position = basePos + Vector3.right * (ownerId * 0.6f);
-        face.transform.rotation = Quaternion.LookRotation(face.transform.position - cam.transform.position);
-        face.transform.Rotate(0f, 180f, 0f);
-
+        // Scale face appropriately
         Renderer[] renderers = face.GetComponentsInChildren<Renderer>();
-        Bounds bounds = renderers[0].bounds;
-        foreach (Renderer r in renderers)
-            bounds.Encapsulate(r.bounds);
+        if (renderers.Length > 0)
+        {
+            Bounds bounds = renderers[0].bounds;
+            foreach (Renderer r in renderers)
+                bounds.Encapsulate(r.bounds);
 
-        float scale = targetFaceHeight / bounds.size.y;
-        face.transform.localScale = Vector3.one * scale;
+            float scale = targetFaceHeight / bounds.size.y;
+            face.transform.localScale = Vector3.one * scale;
+            Debug.Log($"[FaceEngine] Face scaled to {scale}");
+        }
 
         spawnedFaces[ownerId] = face;
+        Debug.Log($"[FaceEngine] Face stored in spawnedFaces dictionary for client {ownerId}");
 
         StartCoroutine(ApplyTextureNextFrame(face, texture));
     }

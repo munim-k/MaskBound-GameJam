@@ -1,100 +1,173 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
-using System.Collections.Generic;
 using Unity.Netcode;
 using System.Collections;
+using System.Collections.Generic;
 
+/// <summary>
+/// Server-authoritative sword attack system.
+/// Client predicts animation locally, server validates hits and applies damage.
+/// </summary>
 public class SwordAttack : NetworkBehaviour
 {
     [Header("Components")]
     [SerializeField] private Animator animator;
     
     [Header("Input Action")]
-    // Drag your Input Action Reference here (e.g., 'Fire' or 'Attack')
     [SerializeField] private InputActionReference attackAction;
 
     [Header("Attack Settings")]
     [SerializeField] private float attackSpeed = 1f;
     [SerializeField] private float attackDuration = 0.5f;
     [SerializeField] private float attackCooldown = 0.2f;
-
-    [SerializeField] private float attackDamage = 2f;
-    [SerializeField] LayerMask hitLayerMask;
+    [SerializeField] private float attackDamage = 10f;
     
     [Header("Hit Detection")]
-    [SerializeField] private Transform attackPoint; // Create an empty GameObject at the sword's tip
+    [SerializeField] private Transform attackPoint;
     [SerializeField] private float attackRange = 0.5f;
     [SerializeField] private LayerMask enemyLayers;
+
+    // Constants
+    private const float DAMAGE_DELAY_NORMALIZED = 11f / 12f;
+    private const string ANIM_IS_ATTACKING = "isAttacking";
+    private const string ANIM_ATTACK_SPEED = "AttackSpeed";
 
     // State
     private bool isAttacking = false;
 
     private void OnEnable()
     {
-        // Enable the input action when the object is active
-        attackAction.action.Enable();
+        attackAction?.action.Enable();
     }
 
     private void OnDisable()
     {
-        // Disable it when inactive to prevent errors
-        attackAction.action.Disable();
+        attackAction?.action.Disable();
     }
 
     void Update()
     {
         if (!IsOwner) return;
-        // Check if the button was just performed (clicked)
+        
         if (attackAction.action.WasPressedThisFrame() && !isAttacking)
         {
-            StartCoroutine(PerformAttack());
+            // Client: Predict animation locally for instant feedback
+            StartCoroutine(PlayAttackAnimationLocal());
+            
+            // Server: Validate and apply damage
+            RequestAttackServerRpc(attackPoint.position, transform.forward, attackRange);
         }
     }
 
-    IEnumerator PerformAttack()
+    /// <summary>
+    /// Client-side: Play attack animation locally for instant feedback
+    /// </summary>
+    private IEnumerator PlayAttackAnimationLocal()
     {
-        var damageDelay = 11 / 12f;
-        
         isAttacking = true;
-        animator.SetBool("isAttacking", true);
-        animator.SetFloat("AttackSpeed", attackSpeed);
+        animator.SetBool(ANIM_IS_ATTACKING, true);
+        animator.SetFloat(ANIM_ATTACK_SPEED, attackSpeed);
 
-        // Create a list to track who we've already damaged this swing
-        List<GameObject> alreadyHit = new List<GameObject>();
-
-        // Wait for the 'impact' moment of the animation
-        yield return new WaitForSeconds(attackDuration * damageDelay); 
-
-        // Detect everything in the sphere
-        Collider[] hitColliders = Physics.OverlapSphere(attackPoint.position, attackRange, enemyLayers);
-
-        foreach (Collider col in hitColliders)
-        {
-            // Get the root object (to avoid hitting multiple colliders on the same enemy)
-            GameObject enemyRoot = col.transform.root.gameObject;
-
-            if (!alreadyHit.Contains(enemyRoot))
-            {
-                // Apply damage logic here
-                enemyRoot.GetComponent<EnemyHealth>().TakeDamage(attackDamage);
-
-                // Add to the list so we don't hit them again in this specific foreach loop
-                alreadyHit.Add(enemyRoot);
-            }
-        }
-
-        yield return new WaitForSeconds(attackDuration * (1-damageDelay));
-        animator.SetBool("isAttacking", false);
+        yield return new WaitForSeconds(attackDuration);
+        animator.SetBool(ANIM_IS_ATTACKING, false);
     
         yield return new WaitForSeconds(attackCooldown);
         isAttacking = false;
     }
 
-    // This lets you see the hit circle in the Scene view (very helpful!)
+    /// <summary>
+    /// Client requests server to validate and execute attack
+    /// </summary>
+    [Rpc(SendTo.Server, RequireOwnership = false)]
+    private void RequestAttackServerRpc(Vector3 attackPosition, Vector3 attackDirection, float range, RpcParams rpcParams = default)
+    {
+        // Server validates hit detection
+        Collider[] hitColliders = Physics.OverlapSphere(attackPosition, range, enemyLayers);
+
+        if (hitColliders.Length == 0)
+        {
+            Debug.Log($"[SwordAttack] Client {OwnerClientId} attack missed (no targets in range)");
+            return;
+        }
+
+        // Track unique hits (avoid hitting same enemy multiple times)
+        HashSet<NetworkObject> hitEnemies = new HashSet<NetworkObject>();
+
+        foreach (Collider col in hitColliders)
+        {
+            // Get NetworkObject root to identify unique enemy
+            NetworkObject enemyNetObj = col.GetComponentInParent<NetworkObject>();
+            
+            if (enemyNetObj == null)
+            {
+                Debug.LogWarning($"[SwordAttack] Hit object {col.name} has no NetworkObject");
+                continue;
+            }
+
+            if (hitEnemies.Contains(enemyNetObj))
+                continue; // Already damaged this enemy
+
+            hitEnemies.Add(enemyNetObj);
+
+            // Apply damage via IDamageable interface (future-proof)
+            var damageable = enemyNetObj.GetComponent<IDamageable>();
+            if (damageable != null)
+            {
+                damageable.TakeDamage(attackDamage, new DamageSource 
+                { 
+                    AttackerClientId = OwnerClientId,
+                    DamageType = DamageType.Melee,
+                    HitPoint = attackPosition
+                });
+                Debug.Log($"[SwordAttack] Client {OwnerClientId} hit {enemyNetObj.name} for {attackDamage} damage");
+            }
+            else
+            {
+                // Fallback: Try legacy EnemyHealth component
+                var enemyHealth = enemyNetObj.GetComponent<EnemyHealth>();
+                if (enemyHealth != null)
+                {
+                    enemyHealth.TakeDamage(attackDamage);
+                    Debug.Log($"[SwordAttack] Client {OwnerClientId} hit {enemyNetObj.name} (legacy) for {attackDamage} damage");
+                }
+                else
+                {
+                    Debug.LogWarning($"[SwordAttack] Hit {enemyNetObj.name} has no damage component");
+                }
+            }
+        }
+    }
+
+    // Gizmo for visualizing attack range in editor
     private void OnDrawGizmosSelected()
     {
         if (attackPoint == null) return;
         Gizmos.color = Color.red;
         Gizmos.DrawWireSphere(attackPoint.position, attackRange);
     }
+}
+
+// TODO: Move to Core/Interfaces/IDamageable.cs
+public interface IDamageable
+{
+    void TakeDamage(float amount, DamageSource source);
+    float CurrentHealth { get; }
+    float MaxHealth { get; }
+}
+
+// TODO: Move to Core/Data/DamageSource.cs
+public struct DamageSource
+{
+    public ulong AttackerClientId;
+    public DamageType DamageType;
+    public Vector3 HitPoint;
+}
+
+// TODO: Move to Core/Enums/DamageType.cs
+public enum DamageType
+{
+    Melee,
+    Ranged,
+    Magic,
+    Environmental
 }
