@@ -11,7 +11,11 @@ public class NetworkSpawner : NetworkBehaviour
     [SerializeField] private float matchmakingTimeout = 50f;
 
     [Header("Scenes")]
+
+    [SerializeField] private string gameSceneName = "Game";
     [SerializeField] private string timeoutSceneName = "MainMenu";
+
+
 
     [Header("UI")]
     [SerializeField] private GameObject textBox;
@@ -50,13 +54,20 @@ public class NetworkSpawner : NetworkBehaviour
 
     private void Init()
     {
-        if (initRan) return;
+        if (initRan)
+        {
+            Debug.Log("[NetworkSpawner] Init already ran, skipping");
+            return;
+        }
+        
         initRan = true;
+        Debug.Log($"[NetworkSpawner] Initializing... IsServer={IsServer}");
 
         if (IsServer)
         {
             NetworkManager.Singleton.OnClientConnectedCallback += OnClientConnected;
             NetworkManager.Singleton.OnClientDisconnectCallback += OnClientDisconnected;
+            Debug.Log("[NetworkSpawner] ✅ Registered connection callbacks (auto-start at 3 players)");
         }
     }
 
@@ -98,16 +109,25 @@ public class NetworkSpawner : NetworkBehaviour
 
     private void OnClientConnected(ulong clientId)
     {
-        Debug.Log($"Client connected: {clientId}");
+        int connectedCount = GetConnectedPlayers();
+        Debug.Log($"[NetworkSpawner] ✅ Client connected: {clientId}, Total players: {connectedCount}/{maxPlayers}");
 
-        // 🔧 Guard added (extra safety)
+        // Guard added (extra safety)
         if (uploadPhaseStarted)
-            return;
-
-        // Auto-start upload ONLY when lobby is full
-        if (GetConnectedPlayers() == maxPlayers)
         {
+            Debug.LogWarning($"[NetworkSpawner] Upload phase already started, ignoring connection");
+            return;
+        }
+
+        // Auto-start upload ONLY when lobby is full (3 players)
+        if (connectedCount >= maxPlayers)
+        {
+            Debug.Log($"[NetworkSpawner] 🎮 LOBBY FULL ({connectedCount}/{maxPlayers}) - AUTO-STARTING GAME!");
             StartUploadPhase();
+        }
+        else
+        {
+            Debug.Log($"[NetworkSpawner] ⏳ Waiting for more players... ({connectedCount}/{maxPlayers})");
         }
     }
 
@@ -118,17 +138,37 @@ public class NetworkSpawner : NetworkBehaviour
 
     private void StartUploadPhase()
     {
-        if (uploadPhaseStarted) return;
-        if (!IsServer) return;
+        if (uploadPhaseStarted)
+        {
+            Debug.LogWarning("[NetworkSpawner] StartUploadPhase called but already started!");
+            return;
+        }
+        
+        if (!IsServer)
+        {
+            Debug.LogError("[NetworkSpawner] StartUploadPhase called on non-server!");
+            return;
+        }
 
         uploadPhaseStarted = true;
         timerActive = false;
 
+        Debug.Log("[NetworkSpawner] 🚀 Starting upload phase...");
+
         if (textBox != null) textBox.SetActive(false);
         if (timerText != null) timerText.SetActive(false);
 
-        // 🔑 Delegates UI + flow control to UIManager
-        FindObjectOfType<UIManager>()?.StartUploadPhaseServerRpc();
+        // Delegates UI + flow control to UIManager
+        UIManager uiManager = FindObjectOfType<UIManager>();
+        if (uiManager != null)
+        {
+            Debug.Log("[NetworkSpawner] ✅ Found UIManager, calling StartUploadPhaseServerRpc");
+            uiManager.StartUploadPhaseServerRpc();
+        }
+        else
+        {
+            Debug.LogError("[NetworkSpawner] ❌ NO UIManager FOUND! Upload phase cannot start!");
+        }
     }
 
     private void HandleTimeout()
@@ -145,7 +185,7 @@ public class NetworkSpawner : NetworkBehaviour
 
         SceneManager.LoadScene(timeoutSceneName);
         // NetworkManager.Singleton.SceneManager.LoadScene(timeoutSceneName);
-        
+
     }
 
     private int GetConnectedPlayers()
@@ -153,5 +193,17 @@ public class NetworkSpawner : NetworkBehaviour
         return NetworkManager.Singleton != null
             ? NetworkManager.Singleton.ConnectedClients.Count
             : 0;
+    }
+
+    public void OnStartGamePressed()
+    {
+        if (NetworkManager.Singleton == null)
+        {
+            Debug.LogWarning("Cannot start game: NetworkManager missing.");
+            return;
+        }
+
+        Debug.Log("Loading game scene: " + gameSceneName);
+        NetworkManager.Singleton.SceneManager.LoadScene(gameSceneName, LoadSceneMode.Single);
     }
 }
